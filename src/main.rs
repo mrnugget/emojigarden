@@ -287,6 +287,7 @@ async fn handle_socket(
         width: GRID_WIDTH,
         height: GRID_HEIGHT,
         flowers: game_state.flowers.read().keys().cloned().collect(),
+        pickaxe_position: *game_state.pickaxe_position.read(),
         current_player_id: player_id.clone(),
     };
     let _ = sender
@@ -341,24 +342,28 @@ async fn handle_socket(
                                         y: pos.y - 1,
                                         player_num: pos.player_num,
                                         emoji: pos.emoji.clone(),
+                                        has_pickaxe: pos.has_pickaxe,
                                     },
                                     "ArrowDown" if pos.y < GRID_HEIGHT - 1 => Position {
                                         x: pos.x,
                                         y: pos.y + 1,
                                         player_num: pos.player_num,
                                         emoji: pos.emoji.clone(),
+                                        has_pickaxe: pos.has_pickaxe,
                                     },
                                     "ArrowLeft" if pos.x > 0 => Position {
                                         x: pos.x - 1,
                                         y: pos.y,
                                         player_num: pos.player_num,
                                         emoji: pos.emoji.clone(),
+                                        has_pickaxe: pos.has_pickaxe,
                                     },
                                     "ArrowRight" if pos.x < GRID_WIDTH - 1 => Position {
                                         x: pos.x + 1,
                                         y: pos.y,
                                         player_num: pos.player_num,
                                         emoji: pos.emoji.clone(),
+                                        has_pickaxe: pos.has_pickaxe,
                                     },
                                     _ => continue,
                                 };
@@ -435,6 +440,7 @@ async fn handle_socket(
             width: GRID_WIDTH,
             height: GRID_HEIGHT,
             flowers: game_state.flowers.read().keys().cloned().collect(),
+            pickaxe_position: *game_state.pickaxe_position.read(),
             current_player_id: String::new(),
         };
         let _ = tx.send(serde_json::to_string(&update).unwrap());
