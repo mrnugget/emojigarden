@@ -31,7 +31,9 @@ struct Position {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+#[serde(tag = "type")]
 enum ClientMessage {
+    #[serde(rename = "move")]
     Move { direction: String },
 }
 
