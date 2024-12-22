@@ -197,6 +197,7 @@ async fn main() {
                 height: GRID_HEIGHT,
                 flowers: game_state_clone.flowers.read().keys().cloned().collect(),
                 pickaxe_position: *pickaxe_pos,
+                elixir_position: *game_state_clone.elixir_position.read(),
                 current_player_id: String::new(),
             };
             let _ = tx_clone.send(serde_json::to_string(&update).unwrap());
