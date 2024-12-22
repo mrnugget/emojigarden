@@ -119,6 +119,32 @@ async fn main() {
     let game_state = Arc::new(GameState::new());
     let (tx, _rx) = broadcast::channel(100);
 
+    // Spawn flower cleanup task
+    let game_state_clone = Arc::clone(&game_state);
+    let tx_clone = tx.clone();
+    tokio::spawn(async move {
+        let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(5));
+        loop {
+            interval.tick().await;
+            
+            // Clean up expired flowers
+            {
+                let mut flowers = game_state_clone.flowers.write();
+                flowers.retain(|_, flower| flower.planted_at.elapsed().as_secs() < FLOWER_LIFETIME);
+            }
+
+            // Broadcast update
+            let update = GameUpdate {
+                landscape: game_state_clone.landscape.clone(),
+                players: game_state_clone.players.read().clone(),
+                width: GRID_WIDTH,
+                height: GRID_HEIGHT,
+                flowers: game_state_clone.flowers.read().keys().cloned().collect(),
+            };
+            let _ = tx_clone.send(serde_json::to_string(&update).unwrap());
+        }
+    });
+
     let app = Router::new()
         .route("/", get(index_handler))
         .route("/ws", get(ws_handler))
@@ -182,11 +208,6 @@ async fn handle_socket(
         .insert(player_id.clone(), position);
 
     // Send initial state
-    // Clean up expired flowers
-    {
-        let mut flowers = game_state.flowers.write();
-        flowers.retain(|_, flower| flower.planted_at.elapsed().as_secs() < FLOWER_LIFETIME);
-    }
 
     let update = GameUpdate {
         landscape: game_state.landscape.clone(),
