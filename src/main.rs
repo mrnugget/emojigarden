@@ -481,19 +481,22 @@ async fn handle_socket(
                                     landscape[new_pos.y][new_pos.x] == MOUNTAIN
                                 };
 
-                                if has_mountain && pos.has_pickaxe {
+                                if (has_mountain && (pos.has_pickaxe || pos.has_elixir)) || 
+                                   (game_state.landscape.read()[new_pos.y][new_pos.x] == TREE && pos.has_elixir) {
                                     // Remove mountain
                                     {
                                         let mut landscape = game_state.landscape.write();
                                         landscape[new_pos.y][new_pos.x] = String::new();
                                     }
 
-                                    new_pos.pickaxe_uses += 1;
-                                    if new_pos.pickaxe_uses >= 5 {
-                                        new_pos.has_pickaxe = false;
-                                        new_pos.pickaxe_uses = 0;
-                                    } else {
-                                        new_pos.has_pickaxe = true;
+                                    if pos.has_pickaxe {
+                                        new_pos.pickaxe_uses += 1;
+                                        if new_pos.pickaxe_uses >= 5 {
+                                            new_pos.has_pickaxe = false;
+                                            new_pos.pickaxe_uses = 0;
+                                        } else {
+                                            new_pos.has_pickaxe = true;
+                                        }
                                     }
 
                                     // Spawn new mountain at random location

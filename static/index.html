@@ -243,7 +243,7 @@
                     // Add tooltip with player number
                     const tooltip = document.createElement("div");
                     tooltip.className = `player-tooltip${playerId === data.current_player_id ? ' current-player' : ''}`;
-                    tooltip.textContent = `P${pos.player_num}${pos.has_pickaxe ? ' ⛏️' : ''}`;
+                    tooltip.textContent = `P${pos.player_num}${pos.has_pickaxe ? ' ⛏️' : ''}${pos.has_elixir ? ' 🧪' : ''}`;
                     cell.appendChild(tooltip);
                 });
             };
