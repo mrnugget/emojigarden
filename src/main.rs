@@ -13,6 +13,7 @@ use std::{collections::HashMap, net::SocketAddr, sync::Arc};
 use tokio::sync::broadcast;
 use uuid::Uuid;
 use futures::{sink::SinkExt, stream::StreamExt};
+use rand::Rng;
 
 // Grid dimensions
 const GRID_WIDTH: usize = 20;
