@@ -98,7 +98,7 @@ async fn main() {
         .route("/ws", get(ws_handler))
         .with_state((Arc::clone(&game_state), tx));
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
     println!("Listening on {}", addr);
 
     axum_server::bind(addr)
@@ -138,8 +138,14 @@ async fn handle_socket(
         let x = rng.gen_range(0..GRID_WIDTH);
         let y = rng.gen_range(0..GRID_HEIGHT);
         if game_state.landscape[y][x].is_empty() {
-            let emoji = PLAYER_EMOJIS[rand::thread_rng().gen_range(0..PLAYER_EMOJIS.len())].to_string();
-            break Position { x, y, player_num, emoji };
+            let emoji =
+                PLAYER_EMOJIS[rand::thread_rng().gen_range(0..PLAYER_EMOJIS.len())].to_string();
+            break Position {
+                x,
+                y,
+                player_num,
+                emoji,
+            };
         }
     };
 
