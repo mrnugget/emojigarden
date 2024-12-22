@@ -206,11 +206,15 @@
                     cell.textContent = "⛏️";
                 }
 
-                // Draw landscape and flowers
+                // Draw landscape, flowers, and pickaxe
                 data.landscape.forEach((row, y) => {
                     row.forEach((cell, x) => {
                         const cellElement = document.getElementById(`cell-${x}-${y}`);
-                        if (cell) {
+                        if (data.pickaxe_position && 
+                            data.pickaxe_position[0] === x && 
+                            data.pickaxe_position[1] === y) {
+                            cellElement.textContent = "⛏️";
+                        } else if (cell) {
                             cellElement.textContent = cell;
                         } else if (data.flowers.some(([fx, fy]) => fx === x && fy === y)) {
                             cellElement.textContent = "🌸";
