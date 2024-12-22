@@ -318,6 +318,7 @@ async fn handle_socket(
             height: GRID_HEIGHT,
             flowers,
             pickaxe_position: pickaxe,
+            elixir_position: *game_state.elixir_position.read(),
             current_player_id: player_id.clone(),
         }
     };
