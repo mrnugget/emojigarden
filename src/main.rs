@@ -356,6 +356,7 @@ async fn handle_socket(
                                         emoji: pos.emoji.clone(),
                                         has_pickaxe: pos.has_pickaxe,
                                         pickaxe_uses: pos.pickaxe_uses,
+                                        pickaxe_uses: pos.pickaxe_uses,
                                     },
                                     "ArrowLeft" if pos.x > 0 => Position {
                                         x: pos.x - 1,
@@ -364,6 +365,7 @@ async fn handle_socket(
                                         emoji: pos.emoji.clone(),
                                         has_pickaxe: pos.has_pickaxe,
                                         pickaxe_uses: pos.pickaxe_uses,
+                                        pickaxe_uses: pos.pickaxe_uses,
                                     },
                                     "ArrowRight" if pos.x < GRID_WIDTH - 1 => Position {
                                         x: pos.x + 1,
@@ -371,6 +373,7 @@ async fn handle_socket(
                                         player_num: pos.player_num,
                                         emoji: pos.emoji.clone(),
                                         has_pickaxe: pos.has_pickaxe,
+                                        pickaxe_uses: pos.pickaxe_uses,
                                         pickaxe_uses: pos.pickaxe_uses,
                                     },
                                     _ => continue,
