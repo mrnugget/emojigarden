@@ -199,7 +199,7 @@ async fn main() {
 
             // Broadcast update
             let update = GameUpdate {
-                landscape: game_state_clone.landscape.clone(),
+                landscape: game_state_clone.landscape.read().clone(),
                 players: game_state_clone.players.read().clone(),
                 width: GRID_WIDTH,
                 height: GRID_HEIGHT,
