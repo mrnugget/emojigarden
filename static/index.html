@@ -62,10 +62,26 @@
 
         // Handle keyboard input
         document.addEventListener('keydown', (e) => {
-            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+            const keyMap = {
+                'ArrowUp': 'ArrowUp',
+                'ArrowDown': 'ArrowDown',
+                'ArrowLeft': 'ArrowLeft',
+                'ArrowRight': 'ArrowRight',
+                'w': 'ArrowUp',
+                's': 'ArrowDown',
+                'a': 'ArrowLeft',
+                'd': 'ArrowRight',
+                'W': 'ArrowUp',
+                'S': 'ArrowDown',
+                'A': 'ArrowLeft',
+                'D': 'ArrowRight'
+            };
+            
+            const mappedKey = keyMap[e.key];
+            if (mappedKey) {
                 ws.send(JSON.stringify({
                     type: 'move',
-                    direction: e.key
+                    direction: mappedKey
                 }));
             }
         });
