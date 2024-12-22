@@ -14,7 +14,7 @@
             }
             #grid {
                 display: grid;
-                grid-template-columns: repeat(20, 1fr);
+                grid-template-columns: repeat(40, 1fr);
                 gap: 2px;
                 background-color: #006400;
                 padding: 10px;
@@ -62,15 +62,24 @@
                 console.log("WebSocket disconnected");
             };
 
-            // Initialize grid
-            for (let y = 0; y < 15; y++) {
-                for (let x = 0; x < 20; x++) {
+            let gridWidth = 40;  // Default size, will be updated from server
+            let gridHeight = 30; // Default size, will be updated from server
+
+            function initializeGrid() {
+                grid.innerHTML = ''; // Clear existing grid
+                grid.style.gridTemplateColumns = `repeat(${gridWidth}, 1fr)`;
+                
+                for (let y = 0; y < gridHeight; y++) {
+                    for (let x = 0; x < gridWidth; x++) {
                     const cell = document.createElement("div");
                     cell.className = "cell";
                     cell.id = `cell-${x}-${y}`;
                     grid.appendChild(cell);
+                    }
                 }
             }
+
+            initializeGrid();
 
             // Handle keyboard input
             document.addEventListener("keydown", (e) => {
@@ -104,6 +113,13 @@
             // WebSocket message handling
             ws.onmessage = (event) => {
                 const data = JSON.parse(event.data);
+
+                // Update grid size if needed
+                if (data.width !== gridWidth || data.height !== gridHeight) {
+                    gridWidth = data.width;
+                    gridHeight = data.height;
+                    initializeGrid();
+                }
 
                 console.log(data.players);
                 // Clear all cells

@@ -16,8 +16,8 @@ use tokio::sync::broadcast;
 use uuid::Uuid;
 
 // Grid dimensions
-const GRID_WIDTH: usize = 20;
-const GRID_HEIGHT: usize = 15;
+const GRID_WIDTH: usize = 40;
+const GRID_HEIGHT: usize = 30;
 
 // Emojis
 const TREE: &str = "🌳";
@@ -41,6 +41,8 @@ enum ClientMessage {
 struct GameUpdate {
     landscape: Vec<Vec<String>>,
     players: HashMap<String, Position>,
+    width: usize,
+    height: usize,
 }
 
 struct GameState {
@@ -135,6 +137,8 @@ async fn handle_socket(
     let update = GameUpdate {
         landscape: game_state.landscape.clone(),
         players: game_state.players.read().clone(),
+        width: GRID_WIDTH,
+        height: GRID_HEIGHT,
     };
     let _ = sender
         .send(Message::Text(serde_json::to_string(&update).unwrap()))
@@ -191,6 +195,8 @@ async fn handle_socket(
                             let update = GameUpdate {
                                 landscape: game_state_clone.landscape.clone(),
                                 players: players.clone(),
+                                width: GRID_WIDTH,
+                                height: GRID_HEIGHT,
                             };
                             println!("sending players: {:?}", &update.players);
                             let _ = tx_clone.send(serde_json::to_string(&update).unwrap());
@@ -205,6 +211,8 @@ async fn handle_socket(
         let update = GameUpdate {
             landscape: game_state_clone.landscape.clone(),
             players: game_state_clone.players.read().clone(),
+            width: GRID_WIDTH,
+            height: GRID_HEIGHT,
         };
         let _ = tx_clone.send(serde_json::to_string(&update).unwrap());
     });
