@@ -82,28 +82,35 @@
             
             function connectWebSocket() {
                 const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-                ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+                const wsUrl = `${protocol}//${window.location.host}/ws`;
+                console.log("Connecting to WebSocket at:", wsUrl);
+                
+                ws = new WebSocket(wsUrl);
                 
                 ws.onopen = () => {
-                    console.log("WebSocket connected");
+                    console.log("WebSocket connected successfully");
                     connectionBanner.style.display = "none";
                 };
 
                 ws.onerror = (error) => {
-                    console.error("WebSocket error:", error);
+                    console.error("WebSocket error occurred:", error);
                     connectionBanner.style.display = "block";
                 };
 
-                ws.onclose = () => {
-                    console.log("WebSocket disconnected");
+                ws.onclose = (event) => {
+                    console.log("WebSocket disconnected with code:", event.code);
                     connectionBanner.style.display = "block";
                     // Try to reconnect after 1 second
                     setTimeout(connectWebSocket, 1000);
                 };
 
-                ws.onmessage = handleMessage;
+                ws.onmessage = (event) => {
+                    console.log("Received message:", event.data.slice(0, 100) + "...");
+                    handleMessage(event);
+                };
             }
 
+            // Initialize WebSocket connection when page loads
             connectWebSocket();
 
 
