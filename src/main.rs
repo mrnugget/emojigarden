@@ -141,6 +141,7 @@ async fn main() {
                 width: GRID_WIDTH,
                 height: GRID_HEIGHT,
                 flowers: game_state_clone.flowers.read().keys().cloned().collect(),
+                current_player_id: String::new(),
             };
             let _ = tx_clone.send(serde_json::to_string(&update).unwrap());
         }
@@ -320,6 +321,7 @@ async fn handle_socket(
                                 width: GRID_WIDTH,
                                 height: GRID_HEIGHT,
                                 flowers: game_state_clone.flowers.read().keys().cloned().collect(),
+                                current_player_id: player_id.clone(),
                             };
                             println!("sending players: {:?}", &update.players);
                             let _ = tx_clone.send(serde_json::to_string(&update).unwrap());
@@ -343,6 +345,7 @@ async fn handle_socket(
             width: GRID_WIDTH,
             height: GRID_HEIGHT,
             flowers: game_state_clone.flowers.read().keys().cloned().collect(),
+            current_player_id: String::new(),
         };
         let _ = tx_clone.send(serde_json::to_string(&update).unwrap());
     });
