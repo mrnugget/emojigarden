@@ -54,6 +54,10 @@
                 border-radius: 3px;
                 font-size: 12px;
             }
+            .player-tooltip.current-player {
+                background-color: rgba(0, 100, 0, 0.9);
+                font-weight: bold;
+            }
         </style>
     </head>
     <body>
@@ -194,7 +198,7 @@
                 document.getElementById("player-count").textContent = Object.keys(data.players).length;
                 
                 // Draw players
-                Object.values(data.players).forEach((pos) => {
+                Object.entries(data.players).forEach(([playerId, pos]) => {
                     const cell = document.getElementById(
                         `cell-${pos.x}-${pos.y}`,
                     );
@@ -202,7 +206,7 @@
 
                     // Add tooltip with player number
                     const tooltip = document.createElement("div");
-                    tooltip.className = "player-tooltip";
+                    tooltip.className = `player-tooltip${playerId === data.current_player_id ? ' current-player' : ''}`;
                     tooltip.textContent = `P${pos.player_num}`;
                     cell.appendChild(tooltip);
                 });
