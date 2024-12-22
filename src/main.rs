@@ -98,7 +98,7 @@ async fn main() {
         .route("/ws", get(ws_handler))
         .with_state((Arc::clone(&game_state), tx));
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 8080));
     println!("Listening on {}", addr);
 
     axum_server::bind(addr)
