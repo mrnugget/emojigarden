@@ -203,7 +203,7 @@
                     const cell = document.getElementById(
                         `cell-${data.pickaxe_position[0]}-${data.pickaxe_position[1]}`
                     );
-                    cell.textContent = "⛏️";
+                    cell.textContent = PICKAXE;
                 }
 
                 // Draw landscape, flowers, pickaxe and elixir
@@ -213,7 +213,7 @@
                         if (data.elixir_position && 
                             data.elixir_position[0] === x && 
                             data.elixir_position[1] === y) {
-                            cellElement.textContent = "🧪";
+                            cellElement.textContent = ELIXIR;
                         } else if (data.pickaxe_position && 
                             data.pickaxe_position[0] === x && 
                             data.pickaxe_position[1] === y) {
