@@ -201,11 +201,15 @@ async fn handle_socket(
         }
     };
 
-    // Add player to game state
-    game_state
-        .players
-        .write()
-        .insert(player_id.clone(), position);
+    // Add player to game state and log connection
+    {
+        game_state
+            .players
+            .write()
+            .insert(player_id.clone(), position.clone());
+        println!("Player {} connected with emoji {} at position ({}, {})", 
+            player_id, position.emoji, position.x, position.y);
+    }
 
     // Send initial state
 
@@ -323,8 +327,14 @@ async fn handle_socket(
             }
         }
 
-        // Remove player when connection closes
-        game_state_clone.players.write().remove(&player_id);
+        // Remove player when connection closes and log disconnection
+        {
+            let mut players = game_state_clone.players.write();
+            if let Some(pos) = players.remove(&player_id) {
+                println!("Player {} disconnected (was {} at position ({}, {}))", 
+                    player_id, pos.emoji, pos.x, pos.y);
+            }
+        }
         let update = GameUpdate {
             landscape: game_state_clone.landscape.clone(),
             players: game_state_clone.players.read().clone(),
