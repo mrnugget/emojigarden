@@ -111,24 +111,27 @@ impl GameState {
         // Initialize landscape with random trees and mountains
         let mut tree_count = 0;
         let mut mountain_count = 0;
-        
+
         for row in landscape.iter_mut() {
             for cell in row.iter_mut() {
                 *cell = match rand::random::<f32>() {
                     n if n < 0.2 => {
                         tree_count += 1;
                         TREE.to_string()
-                    },
+                    }
                     n if n < 0.3 => {
                         mountain_count += 1;
                         MOUNTAIN.to_string()
-                    },
+                    }
                     _ => String::new(),
                 };
             }
         }
-        
-        println!("Initialized landscape with {} trees and {} mountains", tree_count, mountain_count);
+
+        println!(
+            "Initialized landscape with {} trees and {} mountains",
+            tree_count, mountain_count
+        );
 
         Self {
             players: Arc::new(RwLock::new(HashMap::new())),
@@ -227,6 +230,7 @@ async fn main() {
                 height: GRID_HEIGHT,
                 flowers: game_state_clone.flowers.read().keys().cloned().collect(),
                 pickaxe_position: *game_state_clone.pickaxe_position.read(),
+                elixir_position: *game_state_clone.elixir_position.read(),
                 current_player_id: String::new(),
             };
             let _ = tx_clone.send(serde_json::to_string(&update).unwrap());
@@ -310,7 +314,7 @@ async fn handle_socket(
         let players = game_state.players.read().clone();
         let flowers = game_state.flowers.read().keys().cloned().collect();
         let pickaxe = *game_state.pickaxe_position.read();
-        
+
         GameUpdate {
             landscape,
             players,
@@ -322,7 +326,7 @@ async fn handle_socket(
             current_player_id: player_id.clone(),
         }
     };
-    
+
     if let Ok(msg) = serde_json::to_string(&update) {
         if let Err(e) = sender.send(Message::Text(msg)).await {
             println!("Error sending initial state: {:?}", e);
