@@ -45,11 +45,15 @@
         </style>
     </head>
     <body>
-        <h1 style="text-align: center; color: #006400; margin-bottom: 10px;">Emoji Garden</h1>
-        <div style="text-align: center; font-size: 12px; margin-bottom: 20px;">
-            currently in the garden: <span id="player-count">0</span>
+        <div style="display: flex; flex-direction: row; align-items: center; gap: 20px;">
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <h1 style="color: #006400; margin: 0;">Emoji Garden</h1>
+                <div style="font-size: 12px;">
+                    currently in the garden: <span id="player-count">0</span>
+                </div>
+            </div>
+            <div id="grid"></div>
         </div>
-        <div id="grid"></div>
         <script>
             const grid = document.getElementById("grid");
             const ws = new WebSocket(`ws://${window.location.host}/ws`);
