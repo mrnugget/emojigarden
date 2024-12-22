@@ -26,30 +26,30 @@ const FLOWER_LIFETIME: u64 = 30; // seconds
 
 // Player emojis
 const PLAYER_EMOJIS: &[&str] = &[
-    "🎅", // Santa
-    "👨", // Man
-    "👩", // Woman
-    "🤡", // Clown
-    "🧙", // Wizard
-    "👻", // Ghost
-    "🦸", // Superhero
-    "🧛", // Vampire
-    "🤠", // Cowboy
-    "👽", // Alien
-    "👷", // Construction Worker
-    "👮", // Police Officer
+    "🎅",   // Santa
+    "👨",   // Man
+    "👩",   // Woman
+    "🤡",   // Clown
+    "🧙",   // Wizard
+    "👻",   // Ghost
+    "🦸",   // Superhero
+    "🧛",   // Vampire
+    "🤠",   // Cowboy
+    "👽",   // Alien
+    "👷",   // Construction Worker
+    "👮",   // Police Officer
     "👨‍🌾", // Farmer
     "👨‍🍳", // Chef
     "👨‍🎤", // Singer
     "👨‍🎨", // Artist
     "👨‍🏫", // Teacher
-    "👨‍⚕️", // Doctor
+    "👨‍⚕️",  // Doctor
     "👨‍🔧", // Mechanic
     "👨‍🚀", // Astronaut
-    "👸", // Princess
-    "🤴", // Prince
-    "🧔", // Person with Beard
-    "👱", // Person with Blond Hair
+    "👸",   // Princess
+    "🤴",   // Prince
+    "🧔",   // Person with Beard
+    "👱",   // Person with Blond Hair
 ];
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
@@ -126,7 +126,7 @@ async fn main() {
         let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(5));
         loop {
             interval.tick().await;
-            
+
             // Clean up expired flowers
             {
                 let mut flowers = game_state_clone.flowers.write();
@@ -230,9 +230,7 @@ async fn handle_socket(
     tokio::spawn(async move {
         while let Some(Ok(msg)) = receiver.next().await {
             if let Message::Text(text) = msg {
-                println!("Received text message: {}", text);
                 if let Ok(client_msg) = serde_json::from_str::<ClientMessage>(&text) {
-                    println!("Parsed client message: {:?}", client_msg);
                     match client_msg {
                         ClientMessage::PlantFlower => {
                             let players = game_state_clone.players.read();
