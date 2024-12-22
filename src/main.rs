@@ -26,6 +26,9 @@ const FLOWER_LIFETIME: u64 = 10; // seconds
 const PICKAXE: &str = "⛏️";
 const PICKAXE_SPAWN_INTERVAL: u64 = 45; // seconds
 const PICKAXE_LIFETIME: u64 = 30; // seconds
+const ELIXIR: &str = "🧪";
+const ELIXIR_SPAWN_INTERVAL: u64 = 60; // seconds
+const ELIXIR_LIFETIME: u64 = 45; // seconds
 
 // Player emojis
 const PLAYER_EMOJIS: &[&str] = &[
@@ -63,6 +66,7 @@ struct Position {
     emoji: String,
     has_pickaxe: bool,
     pickaxe_uses: u8,
+    has_elixir: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -82,6 +86,7 @@ struct GameUpdate {
     height: usize,
     flowers: Vec<(usize, usize)>,
     pickaxe_position: Option<(usize, usize)>,
+    elixir_position: Option<(usize, usize)>,
     current_player_id: String,
 }
 
@@ -97,6 +102,7 @@ struct GameState {
     player_counter: Arc<RwLock<usize>>,
     flowers: Arc<RwLock<HashMap<(usize, usize), Flower>>>,
     pickaxe_position: Arc<RwLock<Option<(usize, usize)>>>,
+    elixir_position: Arc<RwLock<Option<(usize, usize)>>>,
 }
 
 impl GameState {
@@ -130,6 +136,7 @@ impl GameState {
             player_counter: Arc::new(RwLock::new(0)),
             flowers: Arc::new(RwLock::new(HashMap::new())),
             pickaxe_position: Arc::new(RwLock::new(None)),
+            elixir_position: Arc::new(RwLock::new(None)),
         }
     }
 }
