@@ -370,20 +370,35 @@ async fn handle_socket(
                                 };
 
                                 // Check if new position has mountain and player has pickaxe
-                                let mut landscape = game_state.landscape.write();
-                                if landscape[new_pos.y][new_pos.x] == MOUNTAIN && pos.has_pickaxe {
-                                    landscape[new_pos.y][new_pos.x] = String::new();
+                                let has_mountain = {
+                                    let landscape = game_state.landscape.read();
+                                    landscape[new_pos.y][new_pos.x] == MOUNTAIN
+                                };
+
+                                if has_mountain && pos.has_pickaxe {
+                                    // Remove mountain
+                                    {
+                                        let mut landscape = game_state.landscape.write();
+                                        landscape[new_pos.y][new_pos.x] = String::new();
+                                    }
+                                    
                                     pos.has_pickaxe = false;
                                     
                                     // Spawn new mountain at random location
-                                    loop {
+                                    let (mx, my) = loop {
                                         let mut rng = rand::thread_rng();
                                         let mx = rng.gen_range(0..GRID_WIDTH);
                                         let my = rng.gen_range(0..GRID_HEIGHT);
+                                        let landscape = game_state.landscape.read();
                                         if landscape[my][mx].is_empty() {
-                                            landscape[my][mx] = MOUNTAIN.to_string();
-                                            break;
+                                            break (mx, my);
                                         }
+                                    };
+                                    
+                                    // Place new mountain
+                                    {
+                                        let mut landscape = game_state.landscape.write();
+                                        landscape[my][mx] = MOUNTAIN.to_string();
                                     }
                                     
                                     *pos = new_pos;
