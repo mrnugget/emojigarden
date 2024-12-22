@@ -195,6 +195,7 @@
                 // Clear all cells
                 document.querySelectorAll(".cell").forEach((cell) => {
                     cell.textContent = "";
+                    cell.classList.remove('mountain');
                 });
 
                 // Draw landscape and flowers
@@ -224,7 +225,7 @@
                     // Add tooltip with player number
                     const tooltip = document.createElement("div");
                     tooltip.className = `player-tooltip${playerId === data.current_player_id ? ' current-player' : ''}`;
-                    tooltip.textContent = `P${pos.player_num}`;
+                    tooltip.textContent = `P${pos.player_num}${pos.has_pickaxe ? ' ⛏️' : ''}`;
                     cell.appendChild(tooltip);
                 });
             };

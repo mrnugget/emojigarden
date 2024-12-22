@@ -23,6 +23,9 @@ const GRID_HEIGHT: usize = 30;
 const TREE: &str = "🌳";
 const MOUNTAIN: &str = "⛰️";
 const FLOWER_LIFETIME: u64 = 10; // seconds
+const PICKAXE: &str = "⛏️";
+const PICKAXE_SPAWN_INTERVAL: u64 = 45; // seconds
+const PICKAXE_LIFETIME: u64 = 30; // seconds
 
 // Player emojis
 const PLAYER_EMOJIS: &[&str] = &[
@@ -58,6 +61,7 @@ struct Position {
     y: usize,
     player_num: usize,
     emoji: String,
+    has_pickaxe: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -76,6 +80,7 @@ struct GameUpdate {
     width: usize,
     height: usize,
     flowers: Vec<(usize, usize)>,
+    pickaxe_position: Option<(usize, usize)>,
     current_player_id: String,
 }
 
@@ -90,6 +95,7 @@ struct GameState {
     landscape: Vec<Vec<String>>,
     player_counter: Arc<RwLock<usize>>,
     flowers: Arc<RwLock<HashMap<(usize, usize), Flower>>>,
+    pickaxe_position: Arc<RwLock<Option<(usize, usize)>>>,
 }
 
 impl GameState {
@@ -111,6 +117,7 @@ impl GameState {
             landscape,
             player_counter: Arc::new(RwLock::new(0)),
             flowers: Arc::new(RwLock::new(HashMap::new())),
+            pickaxe_position: Arc::new(RwLock::new(None)),
         }
     }
 }
@@ -119,6 +126,62 @@ impl GameState {
 async fn main() {
     let game_state = Arc::new(GameState::new());
     let (tx, _rx) = broadcast::channel(100);
+
+    // Spawn pickaxe spawning task
+    let game_state_clone = Arc::clone(&game_state);
+    let tx_clone = tx.clone();
+    tokio::spawn(async move {
+        let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(PICKAXE_SPAWN_INTERVAL));
+        loop {
+            interval.tick().await;
+            
+            let mut rng = rand::thread_rng();
+            let mut pickaxe_pos = game_state_clone.pickaxe_position.write();
+            
+            // Remove old pickaxe if it exists
+            *pickaxe_pos = None;
+            
+            // Spawn new pickaxe at random empty position
+            loop {
+                let x = rng.gen_range(0..GRID_WIDTH);
+                let y = rng.gen_range(0..GRID_HEIGHT);
+                if game_state_clone.landscape[y][x].is_empty() {
+                    *pickaxe_pos = Some((x, y));
+                    break;
+                }
+            }
+            
+            // Schedule pickaxe removal
+            let game_state_clone2 = Arc::clone(&game_state_clone);
+            let tx_clone2 = tx_clone.clone();
+            tokio::spawn(async move {
+                tokio::time::sleep(tokio::time::Duration::from_secs(PICKAXE_LIFETIME)).await;
+                *game_state_clone2.pickaxe_position.write() = None;
+                let update = GameUpdate {
+                    landscape: game_state_clone2.landscape.clone(),
+                    players: game_state_clone2.players.read().clone(),
+                    width: GRID_WIDTH,
+                    height: GRID_HEIGHT,
+                    flowers: game_state_clone2.flowers.read().keys().cloned().collect(),
+                    pickaxe_position: None,
+                    current_player_id: String::new(),
+                };
+                let _ = tx_clone2.send(serde_json::to_string(&update).unwrap());
+            });
+
+            // Broadcast update
+            let update = GameUpdate {
+                landscape: game_state_clone.landscape.clone(),
+                players: game_state_clone.players.read().clone(),
+                width: GRID_WIDTH,
+                height: GRID_HEIGHT,
+                flowers: game_state_clone.flowers.read().keys().cloned().collect(),
+                pickaxe_position: *pickaxe_pos,
+                current_player_id: String::new(),
+            };
+            let _ = tx_clone.send(serde_json::to_string(&update).unwrap());
+        }
+    });
 
     // Spawn flower cleanup task
     let game_state_clone = Arc::clone(&game_state);
@@ -199,6 +262,7 @@ async fn handle_socket(
                 y,
                 player_num,
                 emoji,
+                has_pickaxe: false,
             };
         }
     };
@@ -299,8 +363,24 @@ async fn handle_socket(
                                     _ => continue,
                                 };
 
-                                // Check if new position is empty or has obstacle
-                                if game_state.landscape[new_pos.y][new_pos.x].is_empty() {
+                                // Check if new position has mountain and player has pickaxe
+                                if game_state.landscape[new_pos.y][new_pos.x] == MOUNTAIN && pos.has_pickaxe {
+                                    game_state.landscape[new_pos.y][new_pos.x] = String::new();
+                                    pos.has_pickaxe = false;
+                                    
+                                    // Spawn new mountain at random location
+                                    loop {
+                                        let mut rng = rand::thread_rng();
+                                        let mx = rng.gen_range(0..GRID_WIDTH);
+                                        let my = rng.gen_range(0..GRID_HEIGHT);
+                                        if game_state.landscape[my][mx].is_empty() {
+                                            game_state.landscape[my][mx] = MOUNTAIN.to_string();
+                                            break;
+                                        }
+                                    }
+                                    
+                                    *pos = new_pos;
+                                } else if game_state.landscape[new_pos.y][new_pos.x].is_empty() {
                                     // Check for flower
                                     let mut flowers = game_state.flowers.write();
                                     if let Some(flower) = flowers.remove(&(new_pos.x, new_pos.y)) {
@@ -309,6 +389,14 @@ async fn handle_socket(
                                             new_pos.emoji = PLAYER_EMOJIS[rand::thread_rng()
                                                 .gen_range(0..PLAYER_EMOJIS.len())]
                                             .to_string();
+                                        }
+                                    }
+                                    // Check for pickaxe
+                                    let mut pickaxe_pos = game_state.pickaxe_position.write();
+                                    if let Some(pickup_pos) = *pickaxe_pos {
+                                        if pickup_pos == (new_pos.x, new_pos.y) {
+                                            *pickaxe_pos = None;
+                                            new_pos.has_pickaxe = true;
                                         }
                                     }
                                     *pos = new_pos;
