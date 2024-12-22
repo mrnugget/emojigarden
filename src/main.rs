@@ -411,7 +411,7 @@ async fn handle_socket(
                                     }
 
                                     pos.pickaxe_uses += 1;
-                                    if pos.pickaxe_uses >= 3 {
+                                    if pos.pickaxe_uses >= 5 {
                                         pos.has_pickaxe = false;
                                         pos.pickaxe_uses = 0;
                                     }
