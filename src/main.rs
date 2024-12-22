@@ -132,16 +132,17 @@ async fn main() {
     let game_state_clone = Arc::clone(&game_state);
     let tx_clone = tx.clone();
     tokio::spawn(async move {
-        let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(PICKAXE_SPAWN_INTERVAL));
+        let mut interval =
+            tokio::time::interval(tokio::time::Duration::from_secs(PICKAXE_SPAWN_INTERVAL));
         loop {
             interval.tick().await;
-            
+
             let mut rng = rand::thread_rng();
             let mut pickaxe_pos = game_state_clone.pickaxe_position.write();
-            
+
             // Remove old pickaxe if it exists
             *pickaxe_pos = None;
-            
+
             // Spawn new pickaxe at random empty position
             loop {
                 let x = rng.gen_range(0..GRID_WIDTH);
@@ -151,7 +152,7 @@ async fn main() {
                     break;
                 }
             }
-            
+
             // Schedule pickaxe removal
             let game_state_clone2 = Arc::clone(&game_state_clone);
             let tx_clone2 = tx_clone.clone();
@@ -347,9 +348,6 @@ async fn handle_socket(
                                         emoji: pos.emoji.clone(),
                                         has_pickaxe: pos.has_pickaxe,
                                         pickaxe_uses: pos.pickaxe_uses,
-                                        pickaxe_uses: pos.pickaxe_uses,
-                                        pickaxe_uses: pos.pickaxe_uses,
-                                        pickaxe_uses: pos.pickaxe_uses,
                                     },
                                     "ArrowDown" if pos.y < GRID_HEIGHT - 1 => Position {
                                         x: pos.x,
@@ -357,6 +355,7 @@ async fn handle_socket(
                                         player_num: pos.player_num,
                                         emoji: pos.emoji.clone(),
                                         has_pickaxe: pos.has_pickaxe,
+                                        pickaxe_uses: pos.pickaxe_uses,
                                     },
                                     "ArrowLeft" if pos.x > 0 => Position {
                                         x: pos.x - 1,
@@ -364,6 +363,7 @@ async fn handle_socket(
                                         player_num: pos.player_num,
                                         emoji: pos.emoji.clone(),
                                         has_pickaxe: pos.has_pickaxe,
+                                        pickaxe_uses: pos.pickaxe_uses,
                                     },
                                     "ArrowRight" if pos.x < GRID_WIDTH - 1 => Position {
                                         x: pos.x + 1,
@@ -371,6 +371,7 @@ async fn handle_socket(
                                         player_num: pos.player_num,
                                         emoji: pos.emoji.clone(),
                                         has_pickaxe: pos.has_pickaxe,
+                                        pickaxe_uses: pos.pickaxe_uses,
                                     },
                                     _ => continue,
                                 };
@@ -387,13 +388,13 @@ async fn handle_socket(
                                         let mut landscape = game_state.landscape.write();
                                         landscape[new_pos.y][new_pos.x] = String::new();
                                     }
-                                    
+
                                     pos.pickaxe_uses += 1;
                                     if pos.pickaxe_uses >= 3 {
                                         pos.has_pickaxe = false;
                                         pos.pickaxe_uses = 0;
                                     }
-                                    
+
                                     // Spawn new mountain at random location
                                     let (mx, my) = loop {
                                         let mut rng = rand::thread_rng();
@@ -404,15 +405,17 @@ async fn handle_socket(
                                             break (mx, my);
                                         }
                                     };
-                                    
+
                                     // Place new mountain
                                     {
                                         let mut landscape = game_state.landscape.write();
                                         landscape[my][mx] = MOUNTAIN.to_string();
                                     }
-                                    
+
                                     *pos = new_pos;
-                                } else if game_state.landscape.read()[new_pos.y][new_pos.x].is_empty() {
+                                } else if game_state.landscape.read()[new_pos.y][new_pos.x]
+                                    .is_empty()
+                                {
                                     // Check for flower
                                     let mut flowers = game_state.flowers.write();
                                     if let Some(flower) = flowers.remove(&(new_pos.x, new_pos.y)) {
