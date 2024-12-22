@@ -22,6 +22,8 @@ const GRID_HEIGHT: usize = 30;
 // Environment emojis
 const TREE: &str = "🌳";
 const MOUNTAIN: &str = "⛰️";
+const FLOWER: &str = "🌸";
+const FLOWER_LIFETIME: u64 = 30; // seconds
 
 // Player emojis
 const PLAYER_EMOJIS: &[&str] = &[
@@ -50,6 +52,8 @@ struct Position {
 enum ClientMessage {
     #[serde(rename = "move")]
     Move { direction: String },
+    #[serde(rename = "plant")]
+    PlantFlower,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -58,12 +62,20 @@ struct GameUpdate {
     players: HashMap<String, Position>,
     width: usize,
     height: usize,
+    flowers: Vec<(usize, usize)>,
+}
+
+#[derive(Clone)]
+struct Flower {
+    planted_at: std::time::Instant,
+    planted_by: String,
 }
 
 struct GameState {
     players: Arc<RwLock<HashMap<String, Position>>>,
     landscape: Vec<Vec<String>>,
     player_counter: Arc<RwLock<usize>>,
+    flowers: Arc<RwLock<HashMap<(usize, usize), Flower>>>,
 }
 
 impl GameState {
@@ -84,6 +96,7 @@ impl GameState {
             players: Arc::new(RwLock::new(HashMap::new())),
             landscape,
             player_counter: Arc::new(RwLock::new(0)),
+            flowers: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 }
@@ -156,11 +169,20 @@ async fn handle_socket(
         .insert(player_id.clone(), position);
 
     // Send initial state
+    // Clean up expired flowers
+    {
+        let mut flowers = game_state.flowers.write();
+        flowers.retain(|_, flower| {
+            flower.planted_at.elapsed().as_secs() < FLOWER_LIFETIME
+        });
+    }
+
     let update = GameUpdate {
         landscape: game_state.landscape.clone(),
         players: game_state.players.read().clone(),
         width: GRID_WIDTH,
         height: GRID_HEIGHT,
+        flowers: game_state.flowers.read().keys().cloned().collect(),
     };
     let _ = sender
         .send(Message::Text(serde_json::to_string(&update).unwrap()))
@@ -180,6 +202,32 @@ async fn handle_socket(
                 if let Ok(client_msg) = serde_json::from_str::<ClientMessage>(&text) {
                     println!("Parsed client message: {:?}", client_msg);
                     match client_msg {
+                        ClientMessage::PlantFlower => {
+                            let players = game_state_clone.players.read();
+                            if let Some(pos) = players.get(&player_id) {
+                                // Plant flower in adjacent cell
+                                let possible_spots = vec![
+                                    (pos.x.saturating_sub(1), pos.y),
+                                    (pos.x + 1, pos.y),
+                                    (pos.x, pos.y.saturating_sub(1)),
+                                    (pos.x, pos.y + 1),
+                                ];
+
+                                for (x, y) in possible_spots {
+                                    if x < GRID_WIDTH && y < GRID_HEIGHT 
+                                        && game_state_clone.landscape[y][x].is_empty() {
+                                        game_state_clone.flowers.write().insert(
+                                            (x, y),
+                                            Flower {
+                                                planted_at: std::time::Instant::now(),
+                                                planted_by: player_id.clone(),
+                                            },
+                                        );
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                         ClientMessage::Move { direction } => {
                             let mut players = game_state_clone.players.write();
                             if let Some(pos) = players.get_mut(&player_id) {
@@ -213,6 +261,14 @@ async fn handle_socket(
 
                                 // Check if new position is empty or has obstacle
                                 if game_state_clone.landscape[new_pos.y][new_pos.x].is_empty() {
+                                    // Check for flower
+                                    let mut flowers = game_state_clone.flowers.write();
+                                    if let Some(flower) = flowers.remove(&(new_pos.x, new_pos.y)) {
+                                        if flower.planted_by != player_id {
+                                            // Change emoji when picking up someone else's flower
+                                            pos.emoji = FLOWER.to_string();
+                                        }
+                                    }
                                     *pos = new_pos;
                                 }
                             }

@@ -107,9 +107,16 @@
                     D: "ArrowRight",
                 };
 
-                const mappedKey = keyMap[e.key];
-                console.log(e.key, mappedKey);
-                if (mappedKey) {
+                if (e.code === "Space") {
+                    const message = JSON.stringify({
+                        type: "plant"
+                    });
+                    ws.send(message);
+                    e.preventDefault();
+                } else {
+                    const mappedKey = keyMap[e.key];
+                    console.log(e.key, mappedKey);
+                    if (mappedKey) {
                     const message = JSON.stringify({
                         type: "move",
                         direction: mappedKey,
@@ -136,13 +143,16 @@
                     cell.textContent = "";
                 });
 
-                // Draw landscape
+                // Draw landscape and flowers
                 data.landscape.forEach((row, y) => {
                     row.forEach((cell, x) => {
+                        const cellElement = document.getElementById(`cell-${x}-${y}`);
                         if (cell) {
-                            document.getElementById(
-                                `cell-${x}-${y}`,
-                            ).textContent = cell;
+                            cellElement.textContent = cell;
+                        } else if (data.flowers.some(([fx, fy]) => fx === x && fy === y)) {
+                            cellElement.textContent = "🌸";
+                        } else {
+                            cellElement.textContent = "";
                         }
                     });
                 });
