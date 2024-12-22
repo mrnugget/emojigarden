@@ -266,7 +266,7 @@ async fn handle_socket(
                                     if let Some(flower) = flowers.remove(&(new_pos.x, new_pos.y)) {
                                         if flower.planted_by != player_id {
                                             // Change emoji when picking up someone else's flower
-                                            pos.emoji = FLOWER.to_string();
+                                            new_pos.emoji = FLOWER.to_string();
                                         }
                                     }
                                     *pos = new_pos;
