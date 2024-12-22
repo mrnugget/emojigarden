@@ -48,7 +48,6 @@ const PLAYER_EMOJIS: &[&str] = &[
     "👨‍🚀", // Astronaut
     "👸", // Princess
     "🤴", // Prince
-    "🧑‍🤝‍🧑", // People Holding Hands
     "🧔", // Person with Beard
     "👱", // Person with Blond Hair
 ];
