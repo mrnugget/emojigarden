@@ -194,10 +194,19 @@
                 }
 
                 console.log(data.players);
-                // Clear all cells
+                // Clear all cells but preserve landscape
                 document.querySelectorAll(".cell").forEach((cell) => {
                     cell.textContent = "";
-                    cell.classList.remove('mountain');
+                });
+
+                // Draw landscape
+                data.landscape.forEach((row, y) => {
+                    row.forEach((cell, x) => {
+                        const cellElement = document.getElementById(`cell-${x}-${y}`);
+                        if (cell) {
+                            cellElement.textContent = cell;
+                        }
+                    });
                 });
 
                 // Draw pickaxe if present
