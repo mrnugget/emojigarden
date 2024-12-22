@@ -194,13 +194,9 @@
                 }
 
                 console.log(data.players);
-                // Clear all cells but preserve landscape
-                document.querySelectorAll(".cell").forEach((cell) => {
-                    cell.textContent = "";
-                });
-
                 // Draw landscape, flowers, pickaxe and elixir
                 data.landscape.forEach((row, y) => {
+                    // Don't clear cells here, just update them
                     row.forEach((cell, x) => {
                         const cellElement = document.getElementById(`cell-${x}-${y}`);
                         if (data.elixir_position && 
