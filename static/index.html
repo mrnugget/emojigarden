@@ -198,6 +198,14 @@
                     cell.classList.remove('mountain');
                 });
 
+                // Draw pickaxe if present
+                if (data.pickaxe_position) {
+                    const cell = document.getElementById(
+                        `cell-${data.pickaxe_position[0]}-${data.pickaxe_position[1]}`
+                    );
+                    cell.textContent = "⛏️";
+                }
+
                 // Draw landscape and flowers
                 data.landscape.forEach((row, y) => {
                     row.forEach((cell, x) => {
