@@ -265,8 +265,8 @@ async fn handle_socket(
                                     let mut flowers = game_state_clone.flowers.write();
                                     if let Some(flower) = flowers.remove(&(new_pos.x, new_pos.y)) {
                                         if flower.planted_by != player_id {
-                                            // Change emoji when picking up someone else's flower
-                                            new_pos.emoji = FLOWER.to_string();
+                                            // Change to random player emoji when picking up someone else's flower
+                                            new_pos.emoji = PLAYER_EMOJIS[rand::thread_rng().gen_range(0..PLAYER_EMOJIS.len())].to_string();
                                         }
                                     }
                                     *pos = new_pos;
