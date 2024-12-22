@@ -209,8 +209,10 @@ async fn handle_socket(
             .players
             .write()
             .insert(player_id.clone(), position.clone());
-        println!("Player {} connected with emoji {} at position ({}, {})", 
-            player_id, position.emoji, position.x, position.y);
+        println!(
+            "Player {} connected with emoji {} at position ({}, {})",
+            player_id, position.emoji, position.x, position.y
+        );
     }
 
     // Send initial state
@@ -230,8 +232,8 @@ async fn handle_socket(
     // Subscribe to broadcasts
     let mut rx = tx.subscribe();
 
-    let game_state_clone = game_state.clone();
-    let tx_clone = tx.clone();
+    let game_state = game_state.clone();
+    let tx = tx.clone();
 
     // Handle incoming messages
     tokio::spawn(async move {
@@ -240,7 +242,7 @@ async fn handle_socket(
                 if let Ok(client_msg) = serde_json::from_str::<ClientMessage>(&text) {
                     match client_msg {
                         ClientMessage::PlantFlower => {
-                            let players = game_state_clone.players.read();
+                            let players = game_state.players.read();
                             if let Some(pos) = players.get(&player_id) {
                                 // Plant flower in adjacent cell
                                 let possible_spots = vec![
@@ -253,9 +255,9 @@ async fn handle_socket(
                                 for (x, y) in possible_spots {
                                     if x < GRID_WIDTH
                                         && y < GRID_HEIGHT
-                                        && game_state_clone.landscape[y][x].is_empty()
+                                        && game_state.landscape[y][x].is_empty()
                                     {
-                                        game_state_clone.flowers.write().insert(
+                                        game_state.flowers.write().insert(
                                             (x, y),
                                             Flower {
                                                 planted_at: std::time::Instant::now(),
@@ -268,8 +270,7 @@ async fn handle_socket(
                             }
                         }
                         ClientMessage::Move { direction } => {
-                            let mut players = game_state_clone.players.write();
-                            if let Some(pos) = players.get_mut(&player_id) {
+                            if let Some(pos) = game_state.players.write().get_mut(&player_id) {
                                 let mut new_pos = match direction.as_str() {
                                     "ArrowUp" if pos.y > 0 => Position {
                                         x: pos.x,
@@ -299,9 +300,9 @@ async fn handle_socket(
                                 };
 
                                 // Check if new position is empty or has obstacle
-                                if game_state_clone.landscape[new_pos.y][new_pos.x].is_empty() {
+                                if game_state.landscape[new_pos.y][new_pos.x].is_empty() {
                                     // Check for flower
-                                    let mut flowers = game_state_clone.flowers.write();
+                                    let mut flowers = game_state.flowers.write();
                                     if let Some(flower) = flowers.remove(&(new_pos.x, new_pos.y)) {
                                         if flower.planted_by != player_id {
                                             // Change to random player emoji when picking up someone else's flower
@@ -313,41 +314,42 @@ async fn handle_socket(
                                     *pos = new_pos;
                                 }
                             }
-
-                            // Broadcast update
-                            let update = GameUpdate {
-                                landscape: game_state_clone.landscape.clone(),
-                                players: players.clone(),
-                                width: GRID_WIDTH,
-                                height: GRID_HEIGHT,
-                                flowers: game_state_clone.flowers.read().keys().cloned().collect(),
-                                current_player_id: player_id.clone(),
-                            };
-                            println!("sending players: {:?}", &update.players);
-                            let _ = tx_clone.send(serde_json::to_string(&update).unwrap());
                         }
                     }
+
+                    // Broadcast update
+                    let update = GameUpdate {
+                        landscape: game_state.landscape.clone(),
+                        players: game_state.players.read().clone(),
+                        width: GRID_WIDTH,
+                        height: GRID_HEIGHT,
+                        flowers: game_state.flowers.read().keys().cloned().collect(),
+                        current_player_id: player_id.clone(),
+                    };
+                    let _ = tx.send(serde_json::to_string(&update).unwrap());
                 }
             }
         }
 
         // Remove player when connection closes and log disconnection
         {
-            let mut players = game_state_clone.players.write();
+            let mut players = game_state.players.write();
             if let Some(pos) = players.remove(&player_id) {
-                println!("Player {} disconnected (was {} at position ({}, {}))", 
-                    player_id, pos.emoji, pos.x, pos.y);
+                println!(
+                    "Player {} disconnected (was {} at position ({}, {}))",
+                    player_id, pos.emoji, pos.x, pos.y
+                );
             }
         }
         let update = GameUpdate {
-            landscape: game_state_clone.landscape.clone(),
-            players: game_state_clone.players.read().clone(),
+            landscape: game_state.landscape.clone(),
+            players: game_state.players.read().clone(),
             width: GRID_WIDTH,
             height: GRID_HEIGHT,
-            flowers: game_state_clone.flowers.read().keys().cloned().collect(),
+            flowers: game_state.flowers.read().keys().cloned().collect(),
             current_player_id: String::new(),
         };
-        let _ = tx_clone.send(serde_json::to_string(&update).unwrap());
+        let _ = tx.send(serde_json::to_string(&update).unwrap());
     });
 
     // Forward broadcasts to client
