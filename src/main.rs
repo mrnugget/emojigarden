@@ -149,10 +149,10 @@ async fn handle_socket(
                             let mut players = game_state_clone.players.write();
                             if let Some(pos) = players.get_mut(&player_id) {
                                 let new_pos = match direction.as_str() {
-                                    "ArrowUp" if pos.y > 0 => Position { x: pos.x, y: pos.y - 1 },
-                                    "ArrowDown" if pos.y < GRID_HEIGHT - 1 => Position { x: pos.x, y: pos.y + 1 },
-                                    "ArrowLeft" if pos.x > 0 => Position { x: pos.x - 1, y: pos.y },
-                                    "ArrowRight" if pos.x < GRID_WIDTH - 1 => Position { x: pos.x + 1, y: pos.y },
+                                    "ArrowUp" if pos.y > 0 => Position { x: pos.x, y: pos.y - 1, player_num: pos.player_num },
+                                    "ArrowDown" if pos.y < GRID_HEIGHT - 1 => Position { x: pos.x, y: pos.y + 1, player_num: pos.player_num },
+                                    "ArrowLeft" if pos.x > 0 => Position { x: pos.x - 1, y: pos.y, player_num: pos.player_num },
+                                    "ArrowRight" if pos.x < GRID_WIDTH - 1 => Position { x: pos.x + 1, y: pos.y, player_num: pos.player_num },
                                     _ => continue,
                                 };
                                 
