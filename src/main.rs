@@ -279,6 +279,7 @@ async fn handle_socket(
                                 players: players.clone(),
                                 width: GRID_WIDTH,
                                 height: GRID_HEIGHT,
+                                flowers: game_state_clone.flowers.read().keys().cloned().collect(),
                             };
                             println!("sending players: {:?}", &update.players);
                             let _ = tx_clone.send(serde_json::to_string(&update).unwrap());
@@ -295,6 +296,7 @@ async fn handle_socket(
             players: game_state_clone.players.read().clone(),
             width: GRID_WIDTH,
             height: GRID_HEIGHT,
+            flowers: game_state_clone.flowers.read().keys().cloned().collect(),
         };
         let _ = tx_clone.send(serde_json::to_string(&update).unwrap());
     });
