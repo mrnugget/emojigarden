@@ -486,6 +486,7 @@ async fn handle_socket(
                         height: GRID_HEIGHT,
                         flowers: game_state.flowers.read().keys().cloned().collect(),
                         pickaxe_position: *game_state.pickaxe_position.read(),
+                        elixir_position: *game_state.elixir_position.read(),
                         current_player_id: player_id.clone(),
                     };
                     let _ = tx.send(serde_json::to_string(&update).unwrap());
@@ -510,6 +511,7 @@ async fn handle_socket(
             height: GRID_HEIGHT,
             flowers: game_state.flowers.read().keys().cloned().collect(),
             pickaxe_position: *game_state.pickaxe_position.read(),
+            elixir_position: *game_state.elixir_position.read(),
             current_player_id: String::new(),
         };
         let _ = tx.send(serde_json::to_string(&update).unwrap());
