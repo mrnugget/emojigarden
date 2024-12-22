@@ -516,6 +516,11 @@ async fn handle_socket(
                                         landscape[my][mx] = MOUNTAIN.to_string();
                                     }
 
+                                    // Use up elixir after moving through obstacle
+                                    if pos.has_elixir {
+                                        new_pos.has_elixir = false;
+                                    }
+
                                     *pos = new_pos;
                                 } else if game_state.landscape.read()[new_pos.y][new_pos.x]
                                     .is_empty()
