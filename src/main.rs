@@ -103,15 +103,26 @@ impl GameState {
     fn new() -> Self {
         let mut landscape = vec![vec![String::new(); GRID_WIDTH]; GRID_HEIGHT];
         // Initialize landscape with random trees and mountains
+        let mut tree_count = 0;
+        let mut mountain_count = 0;
+        
         for row in landscape.iter_mut() {
             for cell in row.iter_mut() {
                 *cell = match rand::random::<f32>() {
-                    n if n < 0.2 => TREE.to_string(),
-                    n if n < 0.3 => MOUNTAIN.to_string(),
+                    n if n < 0.2 => {
+                        tree_count += 1;
+                        TREE.to_string()
+                    },
+                    n if n < 0.3 => {
+                        mountain_count += 1;
+                        MOUNTAIN.to_string()
+                    },
                     _ => String::new(),
                 };
             }
         }
+        
+        println!("Initialized landscape with {} trees and {} mountains", tree_count, mountain_count);
 
         Self {
             players: Arc::new(RwLock::new(HashMap::new())),
@@ -284,19 +295,29 @@ async fn handle_socket(
     }
 
     // Send initial state
-
-    let update = GameUpdate {
-        landscape: game_state.landscape.read().clone(),
-        players: game_state.players.read().clone(),
-        width: GRID_WIDTH,
-        height: GRID_HEIGHT,
-        flowers: game_state.flowers.read().keys().cloned().collect(),
-        pickaxe_position: *game_state.pickaxe_position.read(),
-        current_player_id: player_id.clone(),
-    };
-    let _ = sender
-        .send(Message::Text(serde_json::to_string(&update).unwrap()))
-        .await;
+    {
+        let landscape = game_state.landscape.read();
+        let players = game_state.players.read();
+        let flowers = game_state.flowers.read();
+        let pickaxe = game_state.pickaxe_position.read();
+        
+        let update = GameUpdate {
+            landscape: landscape.clone(),
+            players: players.clone(),
+            width: GRID_WIDTH,
+            height: GRID_HEIGHT,
+            flowers: flowers.keys().cloned().collect(),
+            pickaxe_position: *pickaxe,
+            current_player_id: player_id.clone(),
+        };
+        
+        if let Ok(msg) = serde_json::to_string(&update) {
+            if let Err(e) = sender.send(Message::Text(msg)).await {
+                println!("Error sending initial state: {:?}", e);
+                return;
+            }
+        }
+    }
 
     // Subscribe to broadcasts
     let mut rx = tx.subscribe();
