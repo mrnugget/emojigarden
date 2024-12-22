@@ -49,15 +49,15 @@
         <script>
             const grid = document.getElementById("grid");
             const ws = new WebSocket(`ws://${window.location.host}/ws`);
-            
+
             ws.onopen = () => {
                 console.log("WebSocket connected");
             };
-            
+
             ws.onerror = (error) => {
                 console.error("WebSocket error:", error);
             };
-            
+
             ws.onclose = () => {
                 console.log("WebSocket disconnected");
             };
@@ -105,6 +105,7 @@
             ws.onmessage = (event) => {
                 const data = JSON.parse(event.data);
 
+                console.log(data.players);
                 // Clear all cells
                 document.querySelectorAll(".cell").forEach((cell) => {
                     cell.textContent = "";
