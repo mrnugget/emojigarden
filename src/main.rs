@@ -22,7 +22,6 @@ const GRID_HEIGHT: usize = 30;
 // Environment emojis
 const TREE: &str = "🌳";
 const MOUNTAIN: &str = "⛰️";
-const FLOWER: &str = "🌸";
 const FLOWER_LIFETIME: u64 = 30; // seconds
 
 // Player emojis
@@ -172,9 +171,7 @@ async fn handle_socket(
     // Clean up expired flowers
     {
         let mut flowers = game_state.flowers.write();
-        flowers.retain(|_, flower| {
-            flower.planted_at.elapsed().as_secs() < FLOWER_LIFETIME
-        });
+        flowers.retain(|_, flower| flower.planted_at.elapsed().as_secs() < FLOWER_LIFETIME);
     }
 
     let update = GameUpdate {
@@ -214,8 +211,10 @@ async fn handle_socket(
                                 ];
 
                                 for (x, y) in possible_spots {
-                                    if x < GRID_WIDTH && y < GRID_HEIGHT 
-                                        && game_state_clone.landscape[y][x].is_empty() {
+                                    if x < GRID_WIDTH
+                                        && y < GRID_HEIGHT
+                                        && game_state_clone.landscape[y][x].is_empty()
+                                    {
                                         game_state_clone.flowers.write().insert(
                                             (x, y),
                                             Flower {
@@ -266,7 +265,9 @@ async fn handle_socket(
                                     if let Some(flower) = flowers.remove(&(new_pos.x, new_pos.y)) {
                                         if flower.planted_by != player_id {
                                             // Change to random player emoji when picking up someone else's flower
-                                            new_pos.emoji = PLAYER_EMOJIS[rand::thread_rng().gen_range(0..PLAYER_EMOJIS.len())].to_string();
+                                            new_pos.emoji = PLAYER_EMOJIS[rand::thread_rng()
+                                                .gen_range(0..PLAYER_EMOJIS.len())]
+                                            .to_string();
                                         }
                                     }
                                     *pos = new_pos;
