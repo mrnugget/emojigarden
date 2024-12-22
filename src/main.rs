@@ -7,7 +7,6 @@ use axum::{
     routing::get,
     Router,
 };
-use axum_server::Handle;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, net::SocketAddr, sync::Arc};
@@ -23,7 +22,6 @@ const GRID_HEIGHT: usize = 15;
 // Emojis
 const TREE: &str = "🌳";
 const MOUNTAIN: &str = "⛰️";
-const HUMAN: &str = "👤";
 
 #[derive(Clone, Serialize, Deserialize)]
 struct Position {
