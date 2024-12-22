@@ -286,6 +286,7 @@ async fn handle_socket(
                 emoji,
                 has_pickaxe: false,
                 pickaxe_uses: 0,
+                has_elixir: false,
             };
         }
     };
@@ -377,6 +378,7 @@ async fn handle_socket(
                                         emoji: pos.emoji.clone(),
                                         has_pickaxe: pos.has_pickaxe,
                                         pickaxe_uses: pos.pickaxe_uses,
+                                        has_elixir: pos.has_elixir,
                                     },
                                     "ArrowDown" if pos.y < GRID_HEIGHT - 1 => Position {
                                         x: pos.x,
@@ -385,6 +387,7 @@ async fn handle_socket(
                                         emoji: pos.emoji.clone(),
                                         has_pickaxe: pos.has_pickaxe,
                                         pickaxe_uses: pos.pickaxe_uses,
+                                        has_elixir: pos.has_elixir,
                                     },
                                     "ArrowLeft" if pos.x > 0 => Position {
                                         x: pos.x - 1,
@@ -393,6 +396,7 @@ async fn handle_socket(
                                         emoji: pos.emoji.clone(),
                                         has_pickaxe: pos.has_pickaxe,
                                         pickaxe_uses: pos.pickaxe_uses,
+                                        has_elixir: pos.has_elixir,
                                     },
                                     "ArrowRight" if pos.x < GRID_WIDTH - 1 => Position {
                                         x: pos.x + 1,
@@ -401,6 +405,7 @@ async fn handle_socket(
                                         emoji: pos.emoji.clone(),
                                         has_pickaxe: pos.has_pickaxe,
                                         pickaxe_uses: pos.pickaxe_uses,
+                                        has_elixir: pos.has_elixir,
                                     },
                                     _ => continue,
                                 };
