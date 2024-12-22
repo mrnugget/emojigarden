@@ -174,7 +174,9 @@
 
             // WebSocket message handling
             function handleMessage(event) {
+                console.log("Raw message received:", event.data);
                 const data = JSON.parse(event.data);
+                console.log("Parsed data:", data);
                 
                 // Update title with player emoji and count
                 const currentPlayer = Object.entries(data.players).find(([id]) => id === data.current_player_id);
@@ -194,6 +196,7 @@
                 }
 
                 console.log(data.players);
+                console.log("Updating cells with landscape:", data.landscape);
                 // First clear all cells
                 document.querySelectorAll(".cell").forEach((cell) => {
                     cell.textContent = "";
@@ -238,6 +241,7 @@
                 // Update player count
                 document.getElementById("player-count").textContent = Object.keys(data.players).length;
                 
+                console.log("Drawing players:", data.players);
                 // Draw players
                 Object.entries(data.players).forEach(([playerId, pos]) => {
                     const cell = document.getElementById(
