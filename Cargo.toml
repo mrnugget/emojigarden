@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 axum = { version = "0.7", features = ["ws"] }
+axum-server = "0.6"
 hyper = { version = "1.0", features = ["full"] }
 tokio = { version = "1.0", features = ["full"] }
 tower = { version = "0.4", features = ["util"] }

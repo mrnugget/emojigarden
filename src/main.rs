@@ -6,8 +6,8 @@ use axum::{
     response::Html,
     routing::get,
     Router,
-    Server,
 };
+use axum_server::Handle;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, net::SocketAddr, sync::Arc};
@@ -81,7 +81,7 @@ async fn main() {
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     println!("Listening on {}", addr);
 
-    Server::bind(&addr)
+    axum_server::bind(addr)
         .serve(app.into_make_service())
         .await
         .unwrap();
