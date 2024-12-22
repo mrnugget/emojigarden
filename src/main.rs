@@ -149,7 +149,66 @@ async fn main() {
     let game_state = Arc::new(GameState::new());
     let (tx, _rx) = broadcast::channel(100);
 
-    // Spawn pickaxe spawning task
+    // Spawn elixir spawning task
+    let game_state_clone = Arc::clone(&game_state);
+    let tx_clone = tx.clone();
+    tokio::spawn(async move {
+        let mut interval = 
+            tokio::time::interval(tokio::time::Duration::from_secs(ELIXIR_SPAWN_INTERVAL));
+        loop {
+            interval.tick().await;
+
+            let mut rng = rand::thread_rng();
+            let mut elixir_pos = game_state_clone.elixir_position.write();
+
+            // Remove old elixir if it exists
+            *elixir_pos = None;
+
+            // Spawn new elixir at random empty position
+            loop {
+                let x = rng.gen_range(0..GRID_WIDTH);
+                let y = rng.gen_range(0..GRID_HEIGHT);
+                if game_state_clone.landscape.read()[y][x].is_empty() {
+                    *elixir_pos = Some((x, y));
+                    break;
+                }
+            }
+
+            // Schedule elixir removal
+            let game_state_clone2 = Arc::clone(&game_state_clone);
+            let tx_clone2 = tx_clone.clone();
+            tokio::spawn(async move {
+                tokio::time::sleep(tokio::time::Duration::from_secs(ELIXIR_LIFETIME)).await;
+                *game_state_clone2.elixir_position.write() = None;
+                let update = GameUpdate {
+                    landscape: game_state_clone2.landscape.read().clone(),
+                    players: game_state_clone2.players.read().clone(),
+                    width: GRID_WIDTH,
+                    height: GRID_HEIGHT,
+                    flowers: game_state_clone2.flowers.read().keys().cloned().collect(),
+                    pickaxe_position: *game_state_clone2.pickaxe_position.read(),
+                    elixir_position: None,
+                    current_player_id: String::new(),
+                };
+                let _ = tx_clone2.send(serde_json::to_string(&update).unwrap());
+            });
+
+            // Broadcast update
+            let update = GameUpdate {
+                landscape: game_state_clone.landscape.read().clone(),
+                players: game_state_clone.players.read().clone(),
+                width: GRID_WIDTH,
+                height: GRID_HEIGHT,
+                flowers: game_state_clone.flowers.read().keys().cloned().collect(),
+                pickaxe_position: *game_state_clone.pickaxe_position.read(),
+                elixir_position: *elixir_pos,
+                current_player_id: String::new(),
+            };
+            let _ = tx_clone.send(serde_json::to_string(&update).unwrap());
+        }
+    });
+
+    // Spawn pickaxe spawning task 
     let game_state_clone = Arc::clone(&game_state);
     let tx_clone = tx.clone();
     tokio::spawn(async move {
@@ -475,6 +534,15 @@ async fn handle_socket(
                                             *pickaxe_pos = None;
                                             new_pos.has_pickaxe = true;
                                             new_pos.pickaxe_uses = 0;
+                                        }
+                                    }
+                                    
+                                    // Check for elixir
+                                    let mut elixir_pos = game_state.elixir_position.write();
+                                    if let Some(pickup_pos) = *elixir_pos {
+                                        if pickup_pos == (new_pos.x, new_pos.y) {
+                                            *elixir_pos = None;
+                                            new_pos.has_elixir = true;
                                         }
                                     }
                                     *pos = new_pos;
