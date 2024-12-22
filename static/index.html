@@ -12,6 +12,18 @@
                 height: 100vh;
                 font-family: monospace;
             }
+            #connection-banner {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                background-color: #ff6b6b;
+                color: white;
+                text-align: center;
+                padding: 10px;
+                z-index: 1000;
+            }
             #grid {
                 display: grid;
                 grid-template-columns: repeat(40, 1fr);
@@ -45,6 +57,7 @@
         </style>
     </head>
     <body>
+        <div id="connection-banner">Connection lost. Probably redeploying...</div>
         <div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
             <div style="text-align: center;">
                 <h1 style="color: #006400; margin: 0;">Emoji Garden</h1>
@@ -60,20 +73,35 @@
         </div>
         <script>
             const grid = document.getElementById("grid");
-            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+            const connectionBanner = document.getElementById("connection-banner");
+            let ws;
+            
+            function connectWebSocket() {
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+                
+                ws.onopen = () => {
+                    console.log("WebSocket connected");
+                    connectionBanner.style.display = "none";
+                };
 
-            ws.onopen = () => {
-                console.log("WebSocket connected");
-            };
+                ws.onerror = (error) => {
+                    console.error("WebSocket error:", error);
+                    connectionBanner.style.display = "block";
+                };
 
-            ws.onerror = (error) => {
-                console.error("WebSocket error:", error);
-            };
+                ws.onclose = () => {
+                    console.log("WebSocket disconnected");
+                    connectionBanner.style.display = "block";
+                    // Try to reconnect after 1 second
+                    setTimeout(connectWebSocket, 1000);
+                };
 
-            ws.onclose = () => {
-                console.log("WebSocket disconnected");
-            };
+                ws.onmessage = handleMessage;
+            }
+
+            connectWebSocket();
+
 
             let gridWidth = 40;  // Default size, will be updated from server
             let gridHeight = 30; // Default size, will be updated from server
@@ -132,7 +160,7 @@
             });
 
             // WebSocket message handling
-            ws.onmessage = (event) => {
+            function handleMessage(event) {
                 const data = JSON.parse(event.data);
 
                 // Update grid size if needed
