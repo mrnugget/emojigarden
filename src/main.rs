@@ -182,21 +182,25 @@ async fn handle_socket(
                                         x: pos.x,
                                         y: pos.y - 1,
                                         player_num: pos.player_num,
+                                        emoji: pos.emoji.clone(),
                                     },
                                     "ArrowDown" if pos.y < GRID_HEIGHT - 1 => Position {
                                         x: pos.x,
                                         y: pos.y + 1,
                                         player_num: pos.player_num,
+                                        emoji: pos.emoji.clone(),
                                     },
                                     "ArrowLeft" if pos.x > 0 => Position {
                                         x: pos.x - 1,
                                         y: pos.y,
                                         player_num: pos.player_num,
+                                        emoji: pos.emoji.clone(),
                                     },
                                     "ArrowRight" if pos.x < GRID_WIDTH - 1 => Position {
                                         x: pos.x + 1,
                                         y: pos.y,
                                         player_num: pos.player_num,
+                                        emoji: pos.emoji.clone(),
                                     },
                                     _ => continue,
                                 };
