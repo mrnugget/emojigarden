@@ -92,7 +92,7 @@ struct Flower {
 
 struct GameState {
     players: Arc<RwLock<HashMap<String, Position>>>,
-    landscape: Vec<Vec<String>>,
+    landscape: Arc<RwLock<Vec<Vec<String>>>>,
     player_counter: Arc<RwLock<usize>>,
     flowers: Arc<RwLock<HashMap<(usize, usize), Flower>>>,
     pickaxe_position: Arc<RwLock<Option<(usize, usize)>>>,
@@ -114,7 +114,7 @@ impl GameState {
 
         Self {
             players: Arc::new(RwLock::new(HashMap::new())),
-            landscape,
+            landscape: Arc::new(RwLock::new(landscape)),
             player_counter: Arc::new(RwLock::new(0)),
             flowers: Arc::new(RwLock::new(HashMap::new())),
             pickaxe_position: Arc::new(RwLock::new(None)),
@@ -283,7 +283,7 @@ async fn handle_socket(
     // Send initial state
 
     let update = GameUpdate {
-        landscape: game_state.landscape.clone(),
+        landscape: game_state.landscape.read().clone(),
         players: game_state.players.read().clone(),
         width: GRID_WIDTH,
         height: GRID_HEIGHT,
@@ -370,8 +370,9 @@ async fn handle_socket(
                                 };
 
                                 // Check if new position has mountain and player has pickaxe
-                                if game_state.landscape[new_pos.y][new_pos.x] == MOUNTAIN && pos.has_pickaxe {
-                                    game_state.landscape[new_pos.y][new_pos.x] = String::new();
+                                let mut landscape = game_state.landscape.write();
+                                if landscape[new_pos.y][new_pos.x] == MOUNTAIN && pos.has_pickaxe {
+                                    landscape[new_pos.y][new_pos.x] = String::new();
                                     pos.has_pickaxe = false;
                                     
                                     // Spawn new mountain at random location
@@ -379,8 +380,8 @@ async fn handle_socket(
                                         let mut rng = rand::thread_rng();
                                         let mx = rng.gen_range(0..GRID_WIDTH);
                                         let my = rng.gen_range(0..GRID_HEIGHT);
-                                        if game_state.landscape[my][mx].is_empty() {
-                                            game_state.landscape[my][mx] = MOUNTAIN.to_string();
+                                        if landscape[my][mx].is_empty() {
+                                            landscape[my][mx] = MOUNTAIN.to_string();
                                             break;
                                         }
                                     }
