@@ -410,10 +410,12 @@ async fn handle_socket(
                                         landscape[new_pos.y][new_pos.x] = String::new();
                                     }
 
-                                    pos.pickaxe_uses += 1;
-                                    if pos.pickaxe_uses >= 5 {
-                                        pos.has_pickaxe = false;
-                                        pos.pickaxe_uses = 0;
+                                    new_pos.pickaxe_uses += 1;
+                                    if new_pos.pickaxe_uses >= 5 {
+                                        new_pos.has_pickaxe = false;
+                                        new_pos.pickaxe_uses = 0;
+                                    } else {
+                                        new_pos.has_pickaxe = true;
                                     }
 
                                     // Spawn new mountain at random location
