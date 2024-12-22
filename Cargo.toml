@@ -6,3 +6,17 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+[package]
+name = "emoji-garden"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = { version = "0.7", features = ["ws"] }
+tokio = { version = "1.0", features = ["full"] }
+tower = { version = "0.4", features = ["util"] }
+tower-http = { version = "0.5", features = ["fs", "trace"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+parking_lot = "0.12"
+rand = "0.8"

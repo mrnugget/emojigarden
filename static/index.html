@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Emoji Garden</title>
+    <style>
+        body {
+            background-color: #90EE90;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: monospace;
+        }
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(20, 1fr);
+            gap: 2px;
+            background-color: #006400;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .cell {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            background-color: #98FB98;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div id="grid"></div>
+    <script>
+        const grid = document.getElementById('grid');
+        const ws = new WebSocket(`ws://${window.location.host}/ws`);
+        
+        // Initialize grid
+        for (let y = 0; y < 15; y++) {
+            for (let x = 0; x < 20; x++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.id = `cell-${x}-${y}`;
+                grid.appendChild(cell);
+            }
+        }
+
+        // Handle keyboard input
+        document.addEventListener('keydown', (e) => {
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                ws.send(JSON.stringify({
+                    type: 'move',
+                    direction: e.key
+                }));
+            }
+        });
+
+        // WebSocket message handling
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            // Update grid based on server state
+            // Implementation will go here
+        };
+    </script>
+</body>
+</html>
