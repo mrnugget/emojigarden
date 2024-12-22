@@ -231,7 +231,7 @@ async fn handle_socket(
                         ClientMessage::Move { direction } => {
                             let mut players = game_state_clone.players.write();
                             if let Some(pos) = players.get_mut(&player_id) {
-                                let new_pos = match direction.as_str() {
+                                let mut new_pos = match direction.as_str() {
                                     "ArrowUp" if pos.y > 0 => Position {
                                         x: pos.x,
                                         y: pos.y - 1,
