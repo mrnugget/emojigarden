@@ -22,7 +22,7 @@ const GRID_HEIGHT: usize = 30;
 // Environment emojis
 const TREE: &str = "🌳";
 const MOUNTAIN: &str = "⛰️";
-const FLOWER_LIFETIME: u64 = 30; // seconds
+const FLOWER_LIFETIME: u64 = 10; // seconds
 
 // Player emojis
 const PLAYER_EMOJIS: &[&str] = &[
