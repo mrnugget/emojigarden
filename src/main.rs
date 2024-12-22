@@ -19,15 +19,30 @@ use uuid::Uuid;
 const GRID_WIDTH: usize = 40;
 const GRID_HEIGHT: usize = 30;
 
-// Emojis
+// Environment emojis
 const TREE: &str = "🌳";
 const MOUNTAIN: &str = "⛰️";
+
+// Player emojis
+const PLAYER_EMOJIS: &[&str] = &[
+    "🎅", // Santa
+    "👨", // Man
+    "👩", // Woman
+    "🤡", // Clown
+    "🧙", // Wizard
+    "👻", // Ghost
+    "🦸", // Superhero
+    "🧛", // Vampire
+    "🤠", // Cowboy
+    "👽", // Alien
+];
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 struct Position {
     x: usize,
     y: usize,
     player_num: usize,
+    emoji: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -123,7 +138,8 @@ async fn handle_socket(
         let x = rng.gen_range(0..GRID_WIDTH);
         let y = rng.gen_range(0..GRID_HEIGHT);
         if game_state.landscape[y][x].is_empty() {
-            break Position { x, y, player_num };
+            let emoji = PLAYER_EMOJIS[rand::thread_rng().gen_range(0..PLAYER_EMOJIS.len())].to_string();
+            break Position { x, y, player_num, emoji };
         }
     };
 
