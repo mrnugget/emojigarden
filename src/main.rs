@@ -7,6 +7,7 @@ use axum::{
     routing::get,
     Router,
 };
+use hyper::Server;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, net::SocketAddr, sync::Arc};
@@ -41,9 +42,8 @@ struct GameUpdate {
     players: HashMap<String, Position>,
 }
 
-#[derive(Clone)]
 struct GameState {
-    players: RwLock<HashMap<String, Position>>,
+    players: Arc<RwLock<HashMap<String, Position>>>,
     landscape: Vec<Vec<String>>,
 }
 
@@ -62,7 +62,7 @@ impl GameState {
         }
 
         Self {
-            players: RwLock::new(HashMap::new()),
+            players: Arc::new(RwLock::new(HashMap::new())),
             landscape,
         }
     }
@@ -81,7 +81,7 @@ async fn main() {
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     println!("Listening on {}", addr);
 
-    axum::Server::bind(&addr)
+    Server::bind(&addr)
         .serve(app.into_make_service())
         .await
         .unwrap();
@@ -107,9 +107,9 @@ async fn handle_socket(
     let player_id = Uuid::new_v4().to_string();
     
     // Assign random empty position to new player
-    let mut rng = rand::thread_rng();
     let mut position = Position { x: 0, y: 0 };
     loop {
+        let mut rng = rand::thread_rng();
         let x = rng.gen_range(0..GRID_WIDTH);
         let y = rng.gen_range(0..GRID_HEIGHT);
         if game_state.landscape[y][x].is_empty() {
