@@ -62,6 +62,7 @@ struct Position {
     player_num: usize,
     emoji: String,
     has_pickaxe: bool,
+    pickaxe_uses: u8,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -264,6 +265,7 @@ async fn handle_socket(
                 player_num,
                 emoji,
                 has_pickaxe: false,
+                pickaxe_uses: 0,
             };
         }
     };
@@ -382,7 +384,11 @@ async fn handle_socket(
                                         landscape[new_pos.y][new_pos.x] = String::new();
                                     }
                                     
-                                    pos.has_pickaxe = false;
+                                    pos.pickaxe_uses += 1;
+                                    if pos.pickaxe_uses >= 3 {
+                                        pos.has_pickaxe = false;
+                                        pos.pickaxe_uses = 0;
+                                    }
                                     
                                     // Spawn new mountain at random location
                                     let (mx, my) = loop {
@@ -419,6 +425,7 @@ async fn handle_socket(
                                         if pickup_pos == (new_pos.x, new_pos.y) {
                                             *pickaxe_pos = None;
                                             new_pos.has_pickaxe = true;
+                                            new_pos.pickaxe_uses = 0;
                                         }
                                     }
                                     *pos = new_pos;
