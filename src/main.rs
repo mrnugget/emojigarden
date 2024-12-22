@@ -295,27 +295,27 @@ async fn handle_socket(
     }
 
     // Send initial state
-    {
-        let landscape = game_state.landscape.read();
-        let players = game_state.players.read();
-        let flowers = game_state.flowers.read();
-        let pickaxe = game_state.pickaxe_position.read();
+    let update = {
+        let landscape = game_state.landscape.read().clone();
+        let players = game_state.players.read().clone();
+        let flowers = game_state.flowers.read().keys().cloned().collect();
+        let pickaxe = *game_state.pickaxe_position.read();
         
-        let update = GameUpdate {
-            landscape: landscape.clone(),
-            players: players.clone(),
+        GameUpdate {
+            landscape,
+            players,
             width: GRID_WIDTH,
             height: GRID_HEIGHT,
-            flowers: flowers.keys().cloned().collect(),
-            pickaxe_position: *pickaxe,
+            flowers,
+            pickaxe_position: pickaxe,
             current_player_id: player_id.clone(),
-        };
-        
-        if let Ok(msg) = serde_json::to_string(&update) {
-            if let Err(e) = sender.send(Message::Text(msg)).await {
-                println!("Error sending initial state: {:?}", e);
-                return;
-            }
+        }
+    };
+    
+    if let Ok(msg) = serde_json::to_string(&update) {
+        if let Err(e) = sender.send(Message::Text(msg)).await {
+            println!("Error sending initial state: {:?}", e);
+            return;
         }
     }
 
