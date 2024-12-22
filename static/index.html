@@ -173,6 +173,14 @@
             // WebSocket message handling
             function handleMessage(event) {
                 const data = JSON.parse(event.data);
+                
+                // Update title with player emoji and count
+                const currentPlayer = Object.entries(data.players).find(([id]) => id === data.current_player_id);
+                if (currentPlayer) {
+                    const playerCount = Object.keys(data.players).length;
+                    const otherPlayers = playerCount - 1;
+                    document.title = `${currentPlayer[1].emoji} + ${otherPlayers} others - Emoji Garden`;
+                }
 
                 // Update grid size if needed
                 if (data.width !== gridWidth || data.height !== gridHeight) {
