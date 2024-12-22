@@ -27,6 +27,7 @@ const MOUNTAIN: &str = "⛰️";
 struct Position {
     x: usize,
     y: usize,
+    player_num: usize,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -43,6 +44,7 @@ struct GameUpdate {
 struct GameState {
     players: Arc<RwLock<HashMap<String, Position>>>,
     landscape: Vec<Vec<String>>,
+    player_counter: Arc<RwLock<usize>>,
 }
 
 impl GameState {
@@ -62,6 +64,7 @@ impl GameState {
         Self {
             players: Arc::new(RwLock::new(HashMap::new())),
             landscape,
+            player_counter: Arc::new(RwLock::new(0)),
         }
     }
 }
@@ -104,13 +107,19 @@ async fn handle_socket(
     let (mut sender, mut receiver) = socket.split();
     let player_id = Uuid::new_v4().to_string();
     
-    // Assign random empty position to new player
+    // Increment player counter and assign random empty position to new player
+    let player_num = {
+        let mut counter = game_state.player_counter.write();
+        *counter += 1;
+        *counter
+    };
+
     let position = loop {
         let mut rng = rand::thread_rng();
         let x = rng.gen_range(0..GRID_WIDTH);
         let y = rng.gen_range(0..GRID_HEIGHT);
         if game_state.landscape[y][x].is_empty() {
-            break Position { x, y };
+            break Position { x, y, player_num };
         }
     };
     
