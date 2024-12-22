@@ -194,28 +194,46 @@
                 }
 
                 console.log(data.players);
+                // First clear all cells
+                document.querySelectorAll(".cell").forEach((cell) => {
+                    cell.textContent = "";
+                });
+
                 // Draw landscape, flowers, pickaxe and elixir
                 data.landscape.forEach((row, y) => {
-                    // Don't clear cells here, just update them
                     row.forEach((cell, x) => {
                         const cellElement = document.getElementById(`cell-${x}-${y}`);
-                        if (data.elixir_position && 
-                            data.elixir_position[0] === x && 
-                            data.elixir_position[1] === y) {
-                            cellElement.textContent = ELIXIR;
-                        } else if (data.pickaxe_position && 
-                            data.pickaxe_position[0] === x && 
-                            data.pickaxe_position[1] === y) {
-                            cellElement.textContent = PICKAXE;
-                        } else if (cell) {
+                        if (cell) {
                             cellElement.textContent = cell;
-                        } else if (data.flowers.some(([fx, fy]) => fx === x && fy === y)) {
-                            cellElement.textContent = "🌸";
-                        } else {
-                            cellElement.textContent = "";
                         }
                     });
                 });
+
+                // Draw flowers
+                data.flowers.forEach(([x, y]) => {
+                    const cellElement = document.getElementById(`cell-${x}-${y}`);
+                    if (!cellElement.textContent) {  // Only if cell is empty
+                        cellElement.textContent = "🌸";
+                    }
+                });
+
+                // Draw pickaxe
+                if (data.pickaxe_position) {
+                    const [x, y] = data.pickaxe_position;
+                    const cellElement = document.getElementById(`cell-${x}-${y}`);
+                    if (!cellElement.textContent) {  // Only if cell is empty
+                        cellElement.textContent = PICKAXE;
+                    }
+                }
+
+                // Draw elixir
+                if (data.elixir_position) {
+                    const [x, y] = data.elixir_position;
+                    const cellElement = document.getElementById(`cell-${x}-${y}`);
+                    if (!cellElement.textContent) {  // Only if cell is empty
+                        cellElement.textContent = ELIXIR;
+                    }
+                }
 
                 // Update player count
                 document.getElementById("player-count").textContent = Object.keys(data.players).length;
