@@ -145,7 +145,7 @@ async fn main() {
             loop {
                 let x = rng.gen_range(0..GRID_WIDTH);
                 let y = rng.gen_range(0..GRID_HEIGHT);
-                if game_state_clone.landscape[y][x].is_empty() {
+                if game_state_clone.landscape.read()[y][x].is_empty() {
                     *pickaxe_pos = Some((x, y));
                     break;
                 }
@@ -158,7 +158,7 @@ async fn main() {
                 tokio::time::sleep(tokio::time::Duration::from_secs(PICKAXE_LIFETIME)).await;
                 *game_state_clone2.pickaxe_position.write() = None;
                 let update = GameUpdate {
-                    landscape: game_state_clone2.landscape.clone(),
+                    landscape: game_state_clone2.landscape.read().clone(),
                     players: game_state_clone2.players.read().clone(),
                     width: GRID_WIDTH,
                     height: GRID_HEIGHT,
@@ -171,7 +171,7 @@ async fn main() {
 
             // Broadcast update
             let update = GameUpdate {
-                landscape: game_state_clone.landscape.clone(),
+                landscape: game_state_clone.landscape.read().clone(),
                 players: game_state_clone.players.read().clone(),
                 width: GRID_WIDTH,
                 height: GRID_HEIGHT,
@@ -255,7 +255,7 @@ async fn handle_socket(
         let mut rng = rand::thread_rng();
         let x = rng.gen_range(0..GRID_WIDTH);
         let y = rng.gen_range(0..GRID_HEIGHT);
-        if game_state.landscape[y][x].is_empty() {
+        if game_state.landscape.read()[y][x].is_empty() {
             let emoji =
                 PLAYER_EMOJIS[rand::thread_rng().gen_range(0..PLAYER_EMOJIS.len())].to_string();
             break Position {
@@ -321,7 +321,7 @@ async fn handle_socket(
                                 for (x, y) in possible_spots {
                                     if x < GRID_WIDTH
                                         && y < GRID_HEIGHT
-                                        && game_state.landscape[y][x].is_empty()
+                                        && game_state.landscape.read()[y][x].is_empty()
                                     {
                                         game_state.flowers.write().insert(
                                             (x, y),
@@ -387,7 +387,7 @@ async fn handle_socket(
                                     }
                                     
                                     *pos = new_pos;
-                                } else if game_state.landscape[new_pos.y][new_pos.x].is_empty() {
+                                } else if game_state.landscape.read()[new_pos.y][new_pos.x].is_empty() {
                                     // Check for flower
                                     let mut flowers = game_state.flowers.write();
                                     if let Some(flower) = flowers.remove(&(new_pos.x, new_pos.y)) {
@@ -414,7 +414,7 @@ async fn handle_socket(
 
                     // Broadcast update
                     let update = GameUpdate {
-                        landscape: game_state.landscape.clone(),
+                        landscape: game_state.landscape.read().clone(),
                         players: game_state.players.read().clone(),
                         width: GRID_WIDTH,
                         height: GRID_HEIGHT,
@@ -438,7 +438,7 @@ async fn handle_socket(
             }
         }
         let update = GameUpdate {
-            landscape: game_state.landscape.clone(),
+            landscape: game_state.landscape.read().clone(),
             players: game_state.players.read().clone(),
             width: GRID_WIDTH,
             height: GRID_HEIGHT,
