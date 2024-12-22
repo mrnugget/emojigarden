@@ -107,16 +107,14 @@ async fn handle_socket(
     let player_id = Uuid::new_v4().to_string();
     
     // Assign random empty position to new player
-    let mut position = Position { x: 0, y: 0 };
-    loop {
+    let position = loop {
         let mut rng = rand::thread_rng();
         let x = rng.gen_range(0..GRID_WIDTH);
         let y = rng.gen_range(0..GRID_HEIGHT);
         if game_state.landscape[y][x].is_empty() {
-            position = Position { x, y };
-            break;
+            break Position { x, y };
         }
-    }
+    };
     
     // Add player to game state
     game_state.players.write().insert(player_id.clone(), position);
