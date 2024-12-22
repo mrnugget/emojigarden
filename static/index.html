@@ -61,8 +61,25 @@
         // WebSocket message handling
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
-            // Update grid based on server state
-            // Implementation will go here
+            
+            // Clear all cells
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.textContent = '';
+            });
+            
+            // Draw landscape
+            data.landscape.forEach((row, y) => {
+                row.forEach((cell, x) => {
+                    if (cell) {
+                        document.getElementById(`cell-${x}-${y}`).textContent = cell;
+                    }
+                });
+            });
+            
+            // Draw players
+            Object.values(data.players).forEach(pos => {
+                document.getElementById(`cell-${pos.x}-${pos.y}`).textContent = '👤';
+            });
         };
     </script>
 </body>

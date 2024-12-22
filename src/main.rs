@@ -11,6 +11,8 @@ use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, net::SocketAddr, sync::Arc};
 use tokio::sync::broadcast;
+use uuid::Uuid;
+use futures::{sink::SinkExt, stream::StreamExt};
 
 // Grid dimensions
 const GRID_WIDTH: usize = 20;
@@ -25,6 +27,17 @@ const HUMAN: &str = "👤";
 struct Position {
     x: usize,
     y: usize,
+}
+
+#[derive(Serialize, Deserialize)]
+enum ClientMessage {
+    Move { direction: String },
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+struct GameUpdate {
+    landscape: Vec<Vec<String>>,
+    players: HashMap<String, Position>,
 }
 
 #[derive(Clone)]
@@ -87,8 +100,87 @@ async fn ws_handler(
 async fn handle_socket(
     socket: WebSocket,
     game_state: Arc<GameState>,
-    _tx: broadcast::Sender<String>,
+    tx: broadcast::Sender<String>,
 ) {
-    // WebSocket handler implementation will go here
-    // This will handle player movements and state updates
+    let (mut sender, mut receiver) = socket.split();
+    let player_id = Uuid::new_v4().to_string();
+    
+    // Assign random empty position to new player
+    let mut rng = rand::thread_rng();
+    let mut position = Position { x: 0, y: 0 };
+    loop {
+        let x = rng.gen_range(0..GRID_WIDTH);
+        let y = rng.gen_range(0..GRID_HEIGHT);
+        if game_state.landscape[y][x].is_empty() {
+            position = Position { x, y };
+            break;
+        }
+    }
+    
+    // Add player to game state
+    game_state.players.write().insert(player_id.clone(), position);
+    
+    // Send initial state
+    let update = GameUpdate {
+        landscape: game_state.landscape.clone(),
+        players: game_state.players.read().clone(),
+    };
+    let _ = sender.send(Message::Text(serde_json::to_string(&update).unwrap())).await;
+    
+    // Subscribe to broadcasts
+    let mut rx = tx.subscribe();
+    
+    let game_state_clone = game_state.clone();
+    let tx_clone = tx.clone();
+    
+    // Handle incoming messages
+    tokio::spawn(async move {
+        while let Some(Ok(msg)) = receiver.next().await {
+            if let Message::Text(text) = msg {
+                if let Ok(client_msg) = serde_json::from_str::<ClientMessage>(&text) {
+                    match client_msg {
+                        ClientMessage::Move { direction } => {
+                            let mut players = game_state_clone.players.write();
+                            if let Some(pos) = players.get_mut(&player_id) {
+                                let new_pos = match direction.as_str() {
+                                    "ArrowUp" if pos.y > 0 => Position { x: pos.x, y: pos.y - 1 },
+                                    "ArrowDown" if pos.y < GRID_HEIGHT - 1 => Position { x: pos.x, y: pos.y + 1 },
+                                    "ArrowLeft" if pos.x > 0 => Position { x: pos.x - 1, y: pos.y },
+                                    "ArrowRight" if pos.x < GRID_WIDTH - 1 => Position { x: pos.x + 1, y: pos.y },
+                                    _ => continue,
+                                };
+                                
+                                // Check if new position is empty or has obstacle
+                                if game_state_clone.landscape[new_pos.y][new_pos.x].is_empty() {
+                                    *pos = new_pos;
+                                }
+                            }
+                            
+                            // Broadcast update
+                            let update = GameUpdate {
+                                landscape: game_state_clone.landscape.clone(),
+                                players: players.clone(),
+                            };
+                            let _ = tx_clone.send(serde_json::to_string(&update).unwrap());
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Remove player when connection closes
+        game_state_clone.players.write().remove(&player_id);
+        let update = GameUpdate {
+            landscape: game_state_clone.landscape.clone(),
+            players: game_state_clone.players.read().clone(),
+        };
+        let _ = tx_clone.send(serde_json::to_string(&update).unwrap());
+    });
+    
+    // Forward broadcasts to client
+    while let Ok(msg) = rx.recv().await {
+        if sender.send(Message::Text(msg)).await.is_err() {
+            break;
+        }
+    }
 }
