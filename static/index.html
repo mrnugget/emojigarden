@@ -117,12 +117,13 @@
                     const mappedKey = keyMap[e.key];
                     console.log(e.key, mappedKey);
                     if (mappedKey) {
-                    const message = JSON.stringify({
-                        type: "move",
-                        direction: mappedKey,
-                    });
-                    console.log("Sending message:", message);
-                    ws.send(message);
+                        const message = JSON.stringify({
+                            type: "move",
+                            direction: mappedKey,
+                        });
+                        console.log("Sending message:", message);
+                        ws.send(message);
+                    }
                 }
             });
 
