@@ -1,6 +1,3 @@
-fn main() {
-    println!("Hello, world!");
-}
 use axum::{
     extract::{
         ws::{Message, WebSocket, WebSocketUpgrade},
@@ -49,7 +46,7 @@ impl GameState {
                 };
             }
         }
-        
+
         Self {
             players: RwLock::new(HashMap::new()),
             landscape,
@@ -69,7 +66,7 @@ async fn main() {
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     println!("Listening on {}", addr);
-    
+
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
@@ -87,7 +84,11 @@ async fn ws_handler(
     ws.on_upgrade(|socket| handle_socket(socket, game_state, tx))
 }
 
-async fn handle_socket(socket: WebSocket, game_state: Arc<GameState>, _tx: broadcast::Sender<String>) {
+async fn handle_socket(
+    socket: WebSocket,
+    game_state: Arc<GameState>,
+    _tx: broadcast::Sender<String>,
+) {
     // WebSocket handler implementation will go here
     // This will handle player movements and state updates
 }
