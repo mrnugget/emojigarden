@@ -23,7 +23,7 @@ const GRID_HEIGHT: usize = 15;
 const TREE: &str = "🌳";
 const MOUNTAIN: &str = "⛰️";
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 struct Position {
     x: usize,
     y: usize,
@@ -190,6 +190,7 @@ async fn handle_socket(
                                 landscape: game_state_clone.landscape.clone(),
                                 players: players.clone(),
                             };
+                            println!("sending players: {:?}", &update.players);
                             let _ = tx_clone.send(serde_json::to_string(&update).unwrap());
                         }
                     }
