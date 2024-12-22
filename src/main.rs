@@ -6,8 +6,8 @@ use axum::{
     response::Html,
     routing::get,
     Router,
+    Server,
 };
-use hyper::Server;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, net::SocketAddr, sync::Arc};
