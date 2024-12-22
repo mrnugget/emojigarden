@@ -36,6 +36,21 @@ const PLAYER_EMOJIS: &[&str] = &[
     "🧛", // Vampire
     "🤠", // Cowboy
     "👽", // Alien
+    "👷", // Construction Worker
+    "👮", // Police Officer
+    "👨‍🌾", // Farmer
+    "👨‍🍳", // Chef
+    "👨‍🎤", // Singer
+    "👨‍🎨", // Artist
+    "👨‍🏫", // Teacher
+    "👨‍⚕️", // Doctor
+    "👨‍🔧", // Mechanic
+    "👨‍🚀", // Astronaut
+    "👸", // Princess
+    "🤴", // Prince
+    "🧑‍🤝‍🧑", // People Holding Hands
+    "🧔", // Person with Beard
+    "👱", // Person with Blond Hair
 ];
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
