@@ -148,8 +148,9 @@ async fn handle_socket(
     tokio::spawn(async move {
         while let Some(Ok(msg)) = receiver.next().await {
             if let Message::Text(text) = msg {
+                println!("Received text message: {}", text);
                 if let Ok(client_msg) = serde_json::from_str::<ClientMessage>(&text) {
-                    println!("client_msg: {:?}", client_msg);
+                    println!("Parsed client message: {:?}", client_msg);
                     match client_msg {
                         ClientMessage::Move { direction } => {
                             let mut players = game_state_clone.players.write();

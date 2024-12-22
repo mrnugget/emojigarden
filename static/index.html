@@ -49,6 +49,18 @@
         <script>
             const grid = document.getElementById("grid");
             const ws = new WebSocket(`ws://${window.location.host}/ws`);
+            
+            ws.onopen = () => {
+                console.log("WebSocket connected");
+            };
+            
+            ws.onerror = (error) => {
+                console.error("WebSocket error:", error);
+            };
+            
+            ws.onclose = () => {
+                console.log("WebSocket disconnected");
+            };
 
             // Initialize grid
             for (let y = 0; y < 15; y++) {
@@ -80,12 +92,12 @@
                 const mappedKey = keyMap[e.key];
                 console.log(e.key, mappedKey);
                 if (mappedKey) {
-                    ws.send(
-                        JSON.stringify({
-                            type: "move",
-                            direction: mappedKey,
-                        }),
-                    );
+                    const message = JSON.stringify({
+                        type: "move",
+                        direction: mappedKey,
+                    });
+                    console.log("Sending message:", message);
+                    ws.send(message);
                 }
             });
 
