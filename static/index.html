@@ -179,7 +179,9 @@
                 if (currentPlayer) {
                     const playerCount = Object.keys(data.players).length;
                     const otherPlayers = playerCount - 1;
-                    document.title = `${currentPlayer[1].emoji} + ${otherPlayers} others - Emoji Garden`;
+                    document.title = otherPlayers === 0 
+                        ? `${currentPlayer[1].emoji} - Emoji Garden`
+                        : `${currentPlayer[1].emoji} + ${otherPlayers} others - Emoji Garden`;
                 }
 
                 // Update grid size if needed
