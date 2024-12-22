@@ -76,6 +76,8 @@
             <div id="grid"></div>
         </div>
         <script>
+            const PICKAXE = "⛏️";
+            const ELIXIR = "🧪";
             const grid = document.getElementById("grid");
             const connectionBanner = document.getElementById("connection-banner");
             let ws;
@@ -217,7 +219,7 @@
                         } else if (data.pickaxe_position && 
                             data.pickaxe_position[0] === x && 
                             data.pickaxe_position[1] === y) {
-                            cellElement.textContent = "⛏️";
+                            cellElement.textContent = PICKAXE;
                         } else if (cell) {
                             cellElement.textContent = cell;
                         } else if (data.flowers.some(([fx, fy]) => fx === x && fy === y)) {
