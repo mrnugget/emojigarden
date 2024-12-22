@@ -45,6 +45,10 @@
         </style>
     </head>
     <body>
+        <h1 style="text-align: center; color: #006400; margin-bottom: 10px;">Emoji Garden</h1>
+        <div style="text-align: center; font-size: 12px; margin-bottom: 20px;">
+            currently in the garden: <span id="player-count">0</span>
+        </div>
         <div id="grid"></div>
         <script>
             const grid = document.getElementById("grid");
@@ -138,6 +142,9 @@
                     });
                 });
 
+                // Update player count
+                document.getElementById("player-count").textContent = Object.keys(data.players).length;
+                
                 // Draw players
                 Object.values(data.players).forEach((pos) => {
                     const cell = document.getElementById(
