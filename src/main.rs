@@ -516,9 +516,24 @@ async fn handle_socket(
                                         landscape[my][mx] = MOUNTAIN.to_string();
                                     }
 
-                                    // Use up elixir after moving through obstacle
+                                    // Use up elixir after moving through obstacle and spawn new one
                                     if pos.has_elixir {
                                         new_pos.has_elixir = false;
+                                        
+                                        // Spawn new elixir at random empty position
+                                        let (ex, ey) = loop {
+                                            let mut rng = rand::thread_rng();
+                                            let ex = rng.gen_range(0..GRID_WIDTH);
+                                            let ey = rng.gen_range(0..GRID_HEIGHT);
+                                            let landscape = game_state.landscape.read();
+                                            if landscape[ey][ex].is_empty() {
+                                                break (ex, ey);
+                                            }
+                                        };
+                                        
+                                        // Place new elixir
+                                        let mut elixir_pos = game_state.elixir_position.write();
+                                        *elixir_pos = Some((ex, ey));
                                     }
 
                                     *pos = new_pos;
